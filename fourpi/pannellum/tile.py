@@ -5,7 +5,7 @@ from distutils.spawn import find_executable
 
 import logging
 import math
-import tempfile
+#import tempfile
 
 MAXIMUM_TILESIZE = 640
 MAX_LEVELS = 6
