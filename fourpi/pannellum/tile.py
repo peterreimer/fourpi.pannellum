@@ -18,6 +18,7 @@ formatter = logging.Formatter('%(levelname)s - %(message)s')
 console.setFormatter(formatter)
 logger.addHandler(console)
 
+NONA =find_executable('nona')
 EXIFTOOL = find_executable('exiftool')
 
 FACES = (
@@ -32,17 +33,23 @@ FACES = (
 if EXIFTOOL:
     logger.info("exiftool found at %s" % EXIFTOOL)
 else:
-    logger.error("EXIFTOOL required but not found.")
+    logger.error("exiftool required but not found.")
+
+if NONA:
+    logger.info("nona found at %s" % NONA)
+else:
+    logger.error("nona required but not found.")
 
 class Pannellum:
 
     def __init__(self, src, hfov=360):
         
-        self.image =  PIL.Image.open(src)
         self.src = src
         self.filename = os.path.split(self.src)[1]
-        self.hfov = hfov
+        self.image =  PIL.Image.open(src)
         self.width, self.height = self.image.size
+        self.hfov = hfov
+        
         logger.info("panorama width: %s" % (self.width))
 
     def levels_and_tiles(self):
@@ -68,12 +75,12 @@ class Pannellum:
         script = os.fdopen(tmp_fd, "w")
         script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (face_width, face_width))
         for yaw, pitch, roll, pos in FACES:
-            script.write('i f4 w%s h%s y%s p%s r%s n"%s"\n' % (self.width, self.height, yaw, pitch, roll, self.src))
+            script.write('i f4 w%s h%s y%s p%s r%s v%s n"%s"\n' % (self.width, self.height, yaw, pitch, roll, self.hfov, self.src))
         return tmp_name
 
 if __name__ == "__main__":
     
-    pano = "/home/reimer/ownCloud/Panoramen/burgfried.jpg"
+    pano = "/home/peter/ownCloud/Panoramen/burgfried.jpg"
     p = Pannellum(pano)
     face, tile, levels = p.levels_and_tiles()
     print(levels, face, tile)
