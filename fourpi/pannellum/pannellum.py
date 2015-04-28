@@ -7,6 +7,7 @@ import logging
 import math
 import os
 import tempfile
+import argparse
 
 MAXIMUM_TILESIZE = 640
 MAX_LEVELS = 6
@@ -76,7 +77,20 @@ class Pannellum:
         script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (face_width, face_width))
         for yaw, pitch, roll, pos in FACES:
             script.write('i f4 w%s h%s y%s p%s r%s v%s n"%s"\n' % (self.width, self.height, yaw, pitch, roll, self.hfov, self.src))
+        logger.info("Script created at %s" % tmp_name)
         return tmp_name
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Pannellum configurator')
+    parser.add_argument('panoramas', nargs='+', help='Panoramic image')
+
+    parser.add_argument("-v", "--verbose", action="store_true", help="be verbose")
+
+    args = parser.parse_args()
+    print(args)
+    
+
 
 if __name__ == "__main__":
     
@@ -84,7 +98,7 @@ if __name__ == "__main__":
     p = Pannellum(pano)
     face, tile, levels = p.levels_and_tiles()
     print(levels, face, tile)
-    print(p.make_script(face))
+    script = p.make_script(face)
 
     #for pano_width in (3600, 5400, 8000, 11500):#range(5000, 16000, 1000):
     #    face, tile, levels = p.levels_and_tiles(pano_width)

@@ -27,8 +27,8 @@ setup(name='fourpi.pannellum',
           # -*- Extra requirements: -*-
       ],
       entry_points={
-      #    'console_scripts':[
-      #      'tile=fourpi.pypano.tile:main',
-      #    ]  
+          'console_scripts':[
+            'pannellum=fourpi.pannellum.pannellum:main',
+          ]  
       },
       )
