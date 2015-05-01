@@ -1,5 +1,5 @@
 #!/usr/bin/env  python
-
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function
 from distutils.spawn import find_executable
 from fourpi.pannellum.scene import Scene
@@ -23,7 +23,7 @@ else:
     logger.error("EXIFTOOL required but not found.")
 
 
-class Tour:
+class  Tour:
     
     def __init__(self, author=None, panoramas=[]):
 
@@ -31,20 +31,23 @@ class Tour:
         default = {}
         if author:
             default['author'] = author
-
-        hotspots = {}
-        # Matrix = [[0 for x in range(5)] for x in range(5)]  
-        scene_ids = [self._scene_id_from_image(panorama) for panorama in panoramas]
-        hotspots = [[None for x in scene_ids] for x in scene_ids]
         
-        logger.info(hotspots) 
+        # List with all scene_ids used in this tour
+        scene_ids = [self._scene_id_from_image(panorama) for panorama in panoramas]
+        
+        # lookup matrix for hotspots
+        hotspots = dict((scene_id,0) for scene_id in scene_ids)
+        hotspots = dict((scene_id,hotspots) for scene_id in scene_ids)
+        for src in scene_ids:
+             for dest in scene_ids:
+                 hotspots[src][dest] = self._make_hotspot(src, dest)
+                 print(hotspots[src][dest])
+         
         locations = []
         for panorama in panoramas:
-            exif = self.read_exif(panorama)
+            #exif = self.read_exif(panorama)
             scene_id = self._scene_id_from_image(panorama)
-            hotspots = "heise Flecken"
-            locations.append((scene_id, hotspots, panorama))
-            logger.info(exif)  
+            locations.append((scene_id, hotspots[scene_id], panorama))
         
         scenes = {}
         for scene_id, hotspots, panorama in locations:
@@ -54,6 +57,9 @@ class Tour:
         default['firstScene'] = scenes.keys()[0]
         self.conf['default'] = default
         self.conf['scenes'] = scenes
+    
+    def _make_hotspot(self, src, dest):
+        return "%s to %s" % (src, dest)
 
     def _scene_id_from_image(self, panorama):
         scene_id = os.path.splitext(os.path.basename(panorama))[0]
@@ -78,9 +84,23 @@ class Tour:
                 values[conf] = exif.get(tag,default)             
             return values
         else:
-            logger.error("File not found: %s" % image)
+            logger.error("File not found: %s" % panorama)
             return None
 
     def get_json(self):
         return json.dumps(self.conf, indent=4, separators=(',', ': '))
     
+if __name__ == "__main__":
+    
+    panos = [
+        "../../panos/gehry-bauten.jpg",
+        "../../panos/medienhafen-hyatt.jpg",
+        "../../panos/medienhafen-bruecke.jpg"
+    ]
+    
+    #panos = [
+    #   "/home/reimer/Desktop/laschozas-upload.jpg",
+    #   "/home/reimer/Desktop/mafra-photosphere.jpg"
+    #]
+    tour = Tour(author="Peter Reimer", panoramas=panos)
+    print(tour.get_json()) 
