@@ -22,6 +22,10 @@ if __name__ == "__main__":
     panos = ["/home/peter/public_html/pannellum/eq/gehry-bauten.jpg",
              "/home/peter/public_html/pannellum/eq/medienhafen-hyatt.jpg"]
     
+    panos = [
+       "/home/reimer/Desktop/laschozas-upload.jpg",
+       "/home/reimer/Desktop/mafra-photosphere.jpg"
+    ]
     tour = Tour(author="Peter Reimer", panoramas=panos)
     print(tour.get_json()) 
     

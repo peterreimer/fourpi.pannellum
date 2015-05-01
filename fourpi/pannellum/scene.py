@@ -19,7 +19,6 @@ console.setFormatter(formatter)
 logger.addHandler(console)
 
 NONA =find_executable('nona')
-EXIFTOOL = find_executable('exiftool')
 
 FACES = (
     (   0,  0,0, "f"), # front
@@ -30,35 +29,32 @@ FACES = (
     (   0, 90,0, "d")  # down
 )
 
-if EXIFTOOL:
-    logger.info("exiftool found at %s" % EXIFTOOL)
-else:
-    logger.error("exiftool required but not found.")
 
 if NONA:
     logger.info("nona found at %s" % NONA)
 else:
     logger.error("nona required but not found.")
 
+
 class Scene:
 
-    def __init__(self, src, hfov=360):
+    def __init__(self, scene_id, panorama, hotspots, hfov=360):
         
-        self.src = src
-        self.scene_id = self._scene_id_from_image()
-        self.filename = os.path.split(self.src)[1]
-        self.image =  PIL.Image.open(src)
+        self.src = panorama
+        self.scene_id = scene_id
+        self.filename = os.path.split(panorama)[1]
+        self.image =  PIL.Image.open(panorama)
         self.width, self.height = self.image.size
         self.hfov = hfov
-        
         conf = {}
         conf['type'] = 'multires'
         conf['multires'] = self._multires_conf()
+        conf['hotSpots'] = hotspots
 
         self.conf = conf
+        
     
-        logger.info("panorama width: %s" % (self.width))
-
+    
     def _multires_conf(self):
         
         face_width, tile_width, levels = self.levels_and_tiles()
@@ -72,10 +68,6 @@ class Scene:
         conf['cubeResolution'] = face_width
         return conf
 
-    def _scene_id_from_image(self):
-        scene_id = os.path.splitext(os.path.basename(self.src))[0]
-        
-        return scene_id
 
     def levels_and_tiles(self):
         """Return the tile width and number of levels """
@@ -104,3 +96,10 @@ class Scene:
         logger.info("Script created at %s" % tmp_name)
         return tmp_name
 
+if __name__ == "__main__":
+    
+    pano = "/home/reimer/Desktop/laschozas-upload.jpg"
+    
+    scene = Scene(pano)
+    print(scene.scene_id) 
+    
