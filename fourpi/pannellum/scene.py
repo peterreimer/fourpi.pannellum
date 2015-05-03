@@ -7,6 +7,7 @@ import logging
 import math
 import os
 import tempfile
+from hotspot import HotSpot
 
 MAXIMUM_TILESIZE = 640
 MAX_LEVELS = 6
@@ -38,7 +39,7 @@ else:
 
 class Scene:
 
-    def __init__(self, scene_id, panorama, hotspots, hfov=360):
+    def __init__(self, scene_id, panorama, exifs, hfov=360):
         
         self.src = panorama
         self.scene_id = scene_id
@@ -49,6 +50,11 @@ class Scene:
         conf = {}
         conf['type'] = 'multires'
         conf['multires'] = self._multires_conf()
+        #print(exifs)
+        hotspots = []
+        for scene_id in exifs.keys():
+            hs = HotSpot(exifs[self.scene_id], exifs[scene_id])
+            hotspots.append(hs.get_conf())            
         conf['hotSpots'] = hotspots
 
         self.conf = conf
