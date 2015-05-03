@@ -6,6 +6,6 @@ dist
 # eclipse
 .project
 .pydevproject
-
+.settings
 # temp stuff
 *~

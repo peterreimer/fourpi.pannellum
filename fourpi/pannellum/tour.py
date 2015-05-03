@@ -1,6 +1,6 @@
 #!/usr/bin/env  python
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals, print_function
+from __future__ import  print_function
 from distutils.spawn import find_executable
 from scene import Scene
 from hotspot import HotSpot

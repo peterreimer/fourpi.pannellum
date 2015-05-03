@@ -1,6 +1,6 @@
 #!/usr/bin/env  python
 
-from __future__ import unicode_literals, print_function
+from __future__ import print_function
 
 class HotSpot:
     
@@ -8,17 +8,14 @@ class HotSpot:
         
         self.src = src
         self.dest = dest
-        print(src)
-        print(dest)
-        self.name = dest
+        self.text = dest.get('title','n/a')
         
     
     def distance(self):
         return 123
     
     def get_conf(self):
-        #return {'text': self.name, 'pitch': self.dest, 'yaw': 0}
-        title = self.dest['title']
+        title = self.text
         conf = {}
         conf['type'] = "scene"
         #conf['text'] = self.dest['title']

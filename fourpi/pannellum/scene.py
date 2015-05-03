@@ -1,6 +1,6 @@
 #!/usr/bin/env  python
 
-from __future__ import unicode_literals, print_function
+from __future__ import print_function
 from distutils.spawn import find_executable
 import PIL.Image
 import logging
@@ -39,7 +39,7 @@ else:
 
 class Scene:
 
-    def __init__(self, scene_id, panorama, exifs, hfov=360):
+    def __init__(self, scene_id, panorama, exifdata, hfov=360):
         
         self.src = panorama
         self.scene_id = scene_id
@@ -49,12 +49,14 @@ class Scene:
         self.hfov = hfov
         conf = {}
         conf['type'] = 'multires'
-        conf['multires'] = self._multires_conf()
+        #conf['multires'] = self._multires_conf()
         #print(exifs)
         hotspots = []
-        for scene_id in exifs.keys():
-            hs = HotSpot(exifs[self.scene_id], exifs[scene_id])
-            hotspots.append(hs.get_conf())            
+        for dest_scene_id in exifdata.keys():
+            src_scene_id = self.scene_id
+            if src_scene_id != dest_scene_id:
+                hs = HotSpot(exifdata[src_scene_id], exifdata[dest_scene_id])
+                hotspots.append(hs.get_conf())            
         conf['hotSpots'] = hotspots
 
         self.conf = conf
