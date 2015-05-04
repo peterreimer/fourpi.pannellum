@@ -47,17 +47,19 @@ class Scene:
         self.image =  PIL.Image.open(panorama)
         self.width, self.height = self.image.size
         self.hfov = hfov
+        self.exif = exifdata[scene_id]
+        self.northOffset = self.exif.get('northOffset', 0)
         conf = {}
         conf['type'] = 'multires'
-        #conf['multires'] = self._multires_conf()
-        #print(exifs)
+        conf['northOffset'] = self.northOffset
+        conf['multiRes'] = self._multires_conf()
         hotspots = []
         for dest_scene_id in exifdata.keys():
             src_scene_id = self.scene_id
             if src_scene_id != dest_scene_id:
-                hs = HotSpot(exifdata[src_scene_id], exifdata[dest_scene_id])
+                hs = HotSpot(dest_scene_id, exifdata[src_scene_id], exifdata[dest_scene_id])
                 hotspots.append(hs.get_conf())            
-        conf['hotSpots'] = hotspots
+        #conf['hotSpots'] = hotspots
 
         self.conf = conf
         
@@ -71,9 +73,9 @@ class Scene:
         conf['path'] = '%l/%s%y_%x'
         conf['fallbackPath'] =  "fallback/%s"
         conf['extension'] =  "jpg"
-        conf['tileResolution'] =  tile_width
-        conf['maxLevel'] =  levels
-        conf['cubeResolution'] = face_width
+        conf['tileResolution'] =  512 # tile_width
+        conf['maxLevel'] =  4 # levels
+        conf['cubeResolution'] = 3976 # face_width
         return conf
 
 

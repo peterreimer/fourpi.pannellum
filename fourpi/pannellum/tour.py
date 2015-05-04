@@ -3,11 +3,12 @@
 from __future__ import  print_function
 from distutils.spawn import find_executable
 from scene import Scene
-from hotspot import HotSpot
 import json
 import os
 import subprocess
 import logging
+import argparse
+
 
 EXIFTOOL = find_executable('exiftool')
 
@@ -64,17 +65,18 @@ class  Tour:
                 exif = json.loads(exifjson)[0]
                 mapping = (
                      ('title', 'DocumentName', ''),
-                     ('direction', 'PoseHeadingDegrees', 0),
                      ('pan', 'InitialViewHeadingDegrees', 0),
                      ('tilt', 'InitialViewPitchDegrees', 0),
                      ('fov', 'InitialHorizontalFOVDegrees', 90),
                      ('lng', 'GPSLongitude', None),
-                     ('lat', 'GPSLatitude', None)
+                     ('lat', 'GPSLatitude', None),
+                     ('northOffset', 'GPSImgDirection', 0)                     
                 )
                 values = {}
                 for conf, tag, default in mapping:
                     values[conf] = exif.get(tag,default)             
                 exifdata[self._scene_id_from_image(panorama)] = values
+                logger.info("EXIF data read from %s" % panorama)
             else:
                 logger.error("File not found: %s" % panorama)
                 
@@ -83,12 +85,24 @@ class  Tour:
     def get_json  (self):
         return json.dumps(self.conf, indent=4, separators=(',', ': '))
     
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Pannellum configurator')
+    parser.add_argument('panoramas', nargs='+', help='Panoramic image')
+
+    parser.add_argument("-v", "--verbose", action="store_true", help="be verbose")
+
+    args = parser.parse_args()
+    print(args)
+
+
 if __name__ == "__main__":
     
     panos = [
         "../../panos/Gehry Bauten.jpg",
-        "../../panos/medienhafen-hyatt.jpg",
-        "../../panos/medienhafen-bruecke.jpg"
+        "../../panos/Medienhafen Hyatt.jpg",
+     #   "../../panos/Medienhafen Bruecke.jpg"
     ]
     
     #panos = [
@@ -97,3 +111,4 @@ if __name__ == "__main__":
     #]
     tour = Tour(author="Peter Reimer", panoramas=panos)
     print(tour.get_json()) 
+
