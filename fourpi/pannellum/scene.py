@@ -30,7 +30,15 @@ FACES = (
     (-180,  0,0, "b"), # back
     (   0,-90,0, "u"), # up
     (   0, 90,0, "d")  # down
-)
+    )
+
+RESIZE_FILTERS = {
+    'cubic': PIL.Image.CUBIC,
+    'bilinear': PIL.Image.BILINEAR,
+    'bicubic': PIL.Image.BICUBIC,
+    'nearest': PIL.Image.NEAREST,
+    'antialias': PIL.Image.ANTIALIAS,
+    }
 
 
 if NONA:
@@ -114,24 +122,33 @@ class Scene:
         return tmp_name
     
     def extract(self):
-        """extract a cubic face from the panorama"""
+        """extract all six cubic faces from the panorama"""
         
         dest = _expand(os.path.dirname(self.src))
-        output_dir = _get_or_create_path(os.path.join(dest, self.scene_id))
-        output = os.path.join(output_dir, self.scene_id)
+        self.output_dir = _get_or_create_path(os.path.join(dest, self.scene_id))
+        output = os.path.join(self.output_dir, self.scene_id)
         script = self._make_script()
         args = (NONA, '-o', output, script)
-        nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        nona.communicate()
+        #nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #nona.communicate()
         os.remove(script)
-                 
-        return output_dir
+        faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(5)] 
+        return faces
 
+    def tile(self):
+        for face in self.extract():
+            for level in range(self.maxLevel, 0, -1):
+                #print(level)
+                _get_or_create_path(os.path.join(self.output_dir, str(level)))
+                
+            
 
 
 if __name__ == "__main__":
     
-    pano = "../../panos/Medienhafen Bruecke.jpg"
+    #pano = "../../panos/Medienhafen Bruecke.jpg"
+    pano = "../../panos/Gehry Bauten.jpg"
     scene = Scene(pano)
     print(scene.scene_id)
-    print(scene.extract())
+    #print(scene.extract())
+    print(scene.tile())
