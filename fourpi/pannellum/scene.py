@@ -23,14 +23,14 @@ logger.addHandler(console)
 
 NONA =find_executable('nona')
 
-FACES = (
+FACES = [
     (   0,  0,0, "f"), # front
-    (  90,  0,0, "l"), # left
-    ( -90,  0,0, "r"), # right
     (-180,  0,0, "b"), # back
     (   0,-90,0, "u"), # up
-    (   0, 90,0, "d")  # down
-    )
+    (   0, 90,0, "d"), # down
+    (  90,  0,0, "l"), # left
+    ( -90,  0,0, "r")  # right
+    ]
 
 RESIZE_FILTERS = {
     'cubic': PIL.Image.CUBIC,
@@ -132,11 +132,13 @@ class Scene:
         #nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         #nona.communicate()
         os.remove(script)
-        faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(5)] 
-        return faces
+        faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)] 
+        #return faces
+        return zip(FACES, faces)
 
     def tile(self):
         for face in self.extract():
+            print(face)
             for level in range(self.maxLevel, 0, -1):
                 #print(level)
                 _get_or_create_path(os.path.join(self.output_dir, str(level)))
@@ -146,8 +148,8 @@ class Scene:
 
 if __name__ == "__main__":
     
-    #pano = "../../panos/Medienhafen Bruecke.jpg"
-    pano = "../../panos/Gehry Bauten.jpg"
+    pano = "../../panos/Medienhafen Bruecke.jpg"
+    #pano = "../../panos/Gehry Bauten.jpg"
     scene = Scene(pano)
     print(scene.scene_id)
     #print(scene.extract())
