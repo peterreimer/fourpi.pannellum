@@ -3,6 +3,7 @@
 from __future__ import  print_function
 from distutils.spawn import find_executable
 from scene import Scene
+from utils import _scene_id_from_image
 import json
 import os
 import subprocess
@@ -27,9 +28,10 @@ else:
 
 class  Tour:
     
-    def __init__(self, author=None, panoramas=[]):
+    def __init__(self, author=None, debug=False, panoramas=[]):
         
         self.panoramas = panoramas
+        self.debug = debug
         self.conf = {}
         default = {}
         if author:
@@ -40,21 +42,21 @@ class  Tour:
         
         scenes = {}
         for panorama in panoramas:
-            scene_id = self._scene_id_from_image(panorama)
-            scene = Scene(scene_id, panorama, self.exifdata)
+            scene = Scene(panorama, self.exifdata)
             scenes[scene.scene_id] = scene.conf
         
         default['firstScene'] = scenes.keys()[0]
+        default['autoLoad'] = True
+        if debug:
+            default['hotSpotDebug'] = True
         self.conf['default'] = default
         self.conf['scenes'] = scenes
+        
     
     def _make_hotspot(self, src, dest):
         
         return "%s to %s" % (src, dest)
 
-    def _scene_id_from_image(self, panorama):
-        scene_id = os.path.splitext(os.path.basename(panorama))[0]
-        return scene_id.lower().replace(' ','-')
 
     def get_exifdata(self):
         
@@ -75,15 +77,18 @@ class  Tour:
                 values = {}
                 for conf, tag, default in mapping:
                     values[conf] = exif.get(tag,default)             
-                exifdata[self._scene_id_from_image(panorama)] = values
+                exifdata[_scene_id_from_image(panorama)] = values
                 logger.info("EXIF data read from %s" % panorama)
             else:
                 logger.error("File not found: %s" % panorama)
                 
         return exifdata
 
-    def get_json  (self):
-        return json.dumps(self.conf, indent=4, separators=(',', ': '))
+    def get_json(self):
+        if self.debug:
+            return json.dumps(self.conf, indent=4, separators=(',', ': '))
+        else:
+            return json.dumps(self.conf,)
     
 
 def main():
@@ -91,9 +96,16 @@ def main():
     parser = argparse.ArgumentParser(description='Pannellum configurator')
     parser.add_argument('panoramas', nargs='+', help='Panoramic image')
 
+    parser.add_argument("-a", "--author", help="The Creator of this tour.")
+    parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug mode.")
     parser.add_argument("-v", "--verbose", action="store_true", help="be verbose")
 
     args = parser.parse_args()
+    debug = args.debug
+    panoramas = args.panoramas
+    tour = Tour(author=args.author, debug=debug, panoramas=panoramas)
+    print(tour.get_json()) 
+    
     print(args)
 
 
@@ -105,10 +117,6 @@ if __name__ == "__main__":
      #   "../../panos/Medienhafen Bruecke.jpg"
     ]
     
-    #panos = [
-    #   "/home/reimer/Desktop/laschozas-upload.jpg",
-    #   "/home/reimer/Desktop/mafra-photosphere.jpg"
-    #]
-    tour = Tour(author="Peter Reimer", panoramas=panos)
+    tour = Tour(author="Peter Reimer", debug=True, panoramas=panos)
     print(tour.get_json()) 
 

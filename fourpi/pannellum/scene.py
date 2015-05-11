@@ -5,12 +5,14 @@ from distutils.spawn import find_executable
 import PIL.Image
 import logging
 import math
+import subprocess
 import os
 import tempfile
 from hotspot import HotSpot
+from utils import _expand, _scene_id_from_image, _get_or_create_path
 
 MAXIMUM_TILESIZE = 640
-MAX_LEVELS = 6
+MAXIMUM_LEVELS = 6
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -39,19 +41,25 @@ else:
 
 class Scene:
 
-    def __init__(self, scene_id, panorama, exifdata, hfov=360):
+    def __init__(self, panorama, exifdata={}, hfov=360):
         
         self.src = panorama
-        self.scene_id = scene_id
+        self.scene_id = _scene_id_from_image(panorama)
+        self.hfov = hfov
         self.filename = os.path.split(panorama)[1]
         self.image =  PIL.Image.open(panorama)
         self.width, self.height = self.image.size
-        self.hfov = hfov
-        self.exif = exifdata[scene_id]
+        
+        self.cubeResolution, self.tileResolution, self.maxLevel = self._levels_and_tiles()
+        self.exif = exifdata.get(self.scene_id, {})
+        self.title = self.exif.get('title', 'n/a')
         self.northOffset = self.exif.get('northOffset', 0)
         conf = {}
         conf['type'] = 'multires'
         conf['northOffset'] = self.northOffset
+        conf['title'] = self.title
+        conf['compass'] = True
+        
         conf['multiRes'] = self._multires_conf()
         hotspots = []
         for dest_scene_id in exifdata.keys():
@@ -59,7 +67,7 @@ class Scene:
             if src_scene_id != dest_scene_id:
                 hs = HotSpot(dest_scene_id, exifdata[src_scene_id], exifdata[dest_scene_id])
                 hotspots.append(hs.get_conf())            
-        #conf['hotSpots'] = hotspots
+        conf['hotSpots'] = hotspots
 
         self.conf = conf
         
@@ -67,49 +75,63 @@ class Scene:
     
     def _multires_conf(self):
         
-        face_width, tile_width, levels = self.levels_and_tiles()
         conf = {}
-        conf['basePath'] = '../tiles/%s/' % self.scene_id 
-        conf['path'] = '%l/%s%y_%x'
-        conf['fallbackPath'] =  "fallback/%s"
+        conf['basePath'] = '../tiles/%s' % self.scene_id 
+        conf['path'] = '/%l/%s%y_%x'
+        conf['fallbackPath'] =  "/fallback/%s"
         conf['extension'] =  "jpg"
-        conf['tileResolution'] =  512 # tile_width
-        conf['maxLevel'] =  4 # levels
-        conf['cubeResolution'] = 3976 # face_width
+        conf['tileResolution'] =  self.tileResolution
+        conf['maxLevel'] =  self.maxLevel
+        conf['cubeResolution'] = self.cubeResolution
         return conf
 
 
-    def levels_and_tiles(self):
+    def _levels_and_tiles(self):
         """Return the tile width and number of levels """
 
         raw_face_width = self.width / math.pi
 
-        tile_fragment = math.floor(raw_face_width / (2 ** MAX_LEVELS))
-        face_width = int(tile_fragment * (2 ** MAX_LEVELS))
+        tile_fragment = math.floor(raw_face_width / (2 ** MAXIMUM_LEVELS))
+        cubeResolution = int(tile_fragment * (2 ** MAXIMUM_LEVELS))
         exp = 0
         fragments = 2 ** exp
         while (fragments * tile_fragment) < MAXIMUM_TILESIZE:
-            tile_width = int(fragments * tile_fragment)
+            tileResolution = int(fragments * tile_fragment)
             exp = exp + 1
             fragments = 2 ** exp
-        levels = int(math.log(face_width / tile_width, 2) + 1)
-        logger.info("Scaling: %s" % (face_width / raw_face_width))
-        return face_width, tile_width, levels
+        maxLevel = int(math.log(cubeResolution / tileResolution, 2) + 1)
+        logger.info("Scaling: %s" % (cubeResolution / raw_face_width))
+        return cubeResolution, tileResolution, maxLevel
 
-    def make_script(self, face_width):
+    def _make_script(self):
 
         tmp_fd, tmp_name = tempfile.mkstemp(".txt", "nona")
         script = os.fdopen(tmp_fd, "w")
-        script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (face_width, face_width))
+        script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (self.cubeResolution,self.cubeResolution))
         for yaw, pitch, roll, pos in FACES:
-            script.write('i f4 w%s h%s y%s p%s r%s v%s n"%s"\n' % (self.width, self.height, yaw, pitch, roll, self.hfov, self.src))
+            script.write('i f4 w%s h%s y%s p%s r%s v%s n"%s"\n' % (self.width, self.height, yaw, pitch, roll, self.hfov, _expand(self.src)))
         logger.info("Script created at %s" % tmp_name)
         return tmp_name
+    
+    def extract(self):
+        """extract a cubic face from the panorama"""
+        
+        dest = _expand(os.path.dirname(self.src))
+        output_dir = _get_or_create_path(os.path.join(dest, self.scene_id))
+        output = os.path.join(output_dir, self.scene_id)
+        script = self._make_script()
+        args = (NONA, '-o', output, script)
+        nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        nona.communicate()
+        os.remove(script)
+                 
+        return output_dir
+
+
 
 if __name__ == "__main__":
     
-    pano = "/home/reimer/Desktop/laschozas-upload.jpg"
-    
+    pano = "../../panos/Medienhafen Bruecke.jpg"
     scene = Scene(pano)
-    print(scene.scene_id) 
-    
+    print(scene.scene_id)
+    print(scene.extract())
