@@ -13,6 +13,7 @@ from utils import _expand, _scene_id_from_image, _get_or_create_path
 
 MAXIMUM_TILESIZE = 640
 MAXIMUM_LEVELS = 6
+EXTENSION = "jpg"
 
 FACES = [ "f", "b", "u", "d", "l", "r" ]
 ANGLES = [(0,0),(-180,0),(0,-90),(0,90),(90,0),(-90,0)]
@@ -53,7 +54,7 @@ class Scene:
         self.exifdata = kwargs.get('exifdata', {})
         self.hfov = kwargs.get('hfov', 360)
         self.tile_size = kwargs.get('tile_size', None)
-        
+        self.tile_folder = kwargs.get('tile_folder', None)
         self.filename = os.path.split(panorama)[1]
         self.image =  PIL.Image.open(panorama)
         self.width, self.height = self.image.size
@@ -81,11 +82,15 @@ class Scene:
    
     def _multires_conf(self):
         
+        if self.tile_folder:
+            basePath = '/'.join((self.tile_folder, self.scene_id))
+        else:
+            basePath = self.scene_id
         conf = {}
-        conf['basePath'] = '../tiles/%s' % self.scene_id 
+        conf['basePath'] = basePath 
         conf['path'] = '/%l/%s%y_%x'
         conf['fallbackPath'] =  "/fallback/%s"
-        conf['extension'] =  "jpg"
+        conf['extension'] = EXTENSION
         conf['tileResolution'] =  self.tileResolution
         conf['maxLevel'] =  self.maxLevel
         conf['cubeResolution'] = self.cubeResolution
@@ -157,13 +162,13 @@ class Scene:
                         lower = min(i * tile_size + tile_size, size)
                         tile = face.crop([left, upper, right, lower])
                         tile.load()
-                        tile.save(os.path.join(level_dir, "%s%s_%s.jpg" % (f, i, j)), 'JPEG', quality=q)
+                        tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=q)
                 size = int(size / 2)
 
 
 if __name__ == "__main__":
     
-    pano = "../../panos/bruecke2400.jpg"
+    pano = "../../panos/bruecke_klein.jpg"
     #pano = "../../panos/Gehry Bauten.jpg"
     scene = Scene(pano, image_quality=0.95)
     scene.tile()

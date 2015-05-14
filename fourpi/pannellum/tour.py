@@ -1,6 +1,7 @@
 #!/usr/bin/env  python
 # -*- coding: utf-8 -*-
 from __future__ import  print_function
+import ConfigParser
 from distutils.spawn import find_executable
 from scene import Scene
 from scene import DEFAULT_IMAGE_FORMAT, DEFAULT_IMAGE_QUALITY, DEFAULT_RESIZE_FILTER
@@ -29,34 +30,42 @@ else:
 
 class  Tour:
     
-    def __init__(self, author=None, debug=False, panoramas=[]):
+    def __init__(self, panoramas=[], **kwargs):
         
+        self.read_configuration()
         self.panoramas = panoramas
-        self.debug = debug
+        self.debug = kwargs.get('debug', False)
+        tile_folder = kwargs.get('tile_folder', None)
         self.conf = {}
         default = {}
+        author = kwargs.get('author', None)
         if author:
             default['author'] = author
         
         # read all exifdats from the images
         self.exifdata = self.get_exifdata()
         
-        scenes = {}
+        scenes_conf = {}
+        self.scenes = []
         for panorama in panoramas:
-            scene = Scene(panorama, exifdata=self.exifdata, image_quality=0.9)
-            scenes[scene.scene_id] = scene.conf
+            scene = Scene(panorama, exifdata=self.exifdata, image_quality=0.9, tile_folder=tile_folder)
+            self.scenes.append(scene)
+            scenes_conf[scene.scene_id] = scene.conf
         
-        default['firstScene'] = scenes.keys()[0]
+        default['firstScene'] = scenes_conf.keys()[0]
         default['autoLoad'] = True
-        if debug:
+        if self.debug:
             default['hotSpotDebug'] = True
         self.conf['default'] = default
-        self.conf['scenes'] = scenes
+        self.conf['scenes'] = scenes_conf
+
+    def read_configuration(self):
         
-    
-    def _make_hotspot(self, src, dest):
-        
-        return "%s to %s" % (src, dest)
+        config_file = ".pannellumrc"
+        config = ConfigParser.RawConfigParser()
+        config.read(config_file)
+        header = config.get('default','header')
+        print(header)
 
 
     def get_exifdata(self):
@@ -95,25 +104,28 @@ class  Tour:
 def main():
     
     parser = argparse.ArgumentParser(description='Pannellum configurator')
-    parser.add_argument('panoramas', nargs='+', help='Panoramic image')
+    parser.add_argument('panoramas', nargs='+', metavar='INPUT', help='Panoramic image(s)')
 
     parser.add_argument("-a", "--author", help="The Creator of this tour.")
     parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug mode.")
     parser.add_argument("-v", "--verbose", action="store_true", help="be verbose")
     parser.add_argument('-f', '--tile_format',
                       default=DEFAULT_IMAGE_FORMAT, help='Image format of the tiles (jpg or png). Default: jpg')
+    parser.add_argument('-t', '--tile_folder', help='Tile folder')
     parser.add_argument('-q', '--image_quality', type=float,
                       default=DEFAULT_IMAGE_QUALITY, help='Quality of the image output (0-1). Default: 0.8')
     parser.add_argument('-r', '--resize_filter', default=DEFAULT_RESIZE_FILTER,
                       help='Type of filter for resizing (bicubic, nearest, bilinear, antialias (best). Default: antialias')
 
     args = parser.parse_args()
-    debug = args.debug
-    panoramas = args.panoramas
-    tour = Tour(author=args.author, debug=debug, panoramas=panoramas)
-    print(tour.get_json()) 
+        
+    tour = Tour(author=args.author, debug=args.debug, tile_folder=args.tile_folder, panoramas=args.panoramas)
+
+    for scene in tour.scenes:
+        scene.tile()
     
-    print(args)
+    print(tour.get_json()) 
+        
 
 
 if __name__ == "__main__":
@@ -121,9 +133,11 @@ if __name__ == "__main__":
     panos = [
         "../../panos/Gehry Bauten.jpg",
         "../../panos/Medienhafen Hyatt.jpg",
-        "../../panos/medienhafen-bruecke.jpg"
+        #s"../../panos/medienhafen-bruecke.jpg"
     ]
     
     tour = Tour(author="Peter Reimer", debug=True, panoramas=panos)
+    for scene in tour.scenes:
+        scene.tile()
     print(tour.get_json()) 
 
