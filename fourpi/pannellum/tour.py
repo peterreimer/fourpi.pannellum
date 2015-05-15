@@ -60,12 +60,15 @@ class  Tour:
         self.conf['scenes'] = scenes_conf
 
     def read_configuration(self):
-        
-        config_file = ".pannellumrc"
-        config = ConfigParser.RawConfigParser()
-        config.read(config_file)
+        cwd = os.getcwd()
+        config_file = "pannellumrc"
+        cfg = [os.path.join(cwd, config_file), os.path.expanduser('~/.pannellumrc')]
+        config = ConfigParser.ConfigParser()    
+        config.read(cfg)
+        author = config.get('default',"author")
+        print(author)
         header = config.get('default','header')
-        print(header)
+        #print(header)
 
 
     def get_exifdata(self):
