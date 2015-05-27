@@ -32,7 +32,7 @@ class  Tour:
     
     def __init__(self, panoramas=[], **kwargs):
         
-        self.read_configuration()
+        # self.read_configuration()
         self.panoramas = panoramas
         self.debug = kwargs.get('debug', False)
         tile_folder = kwargs.get('tile_folder', None)
@@ -68,7 +68,7 @@ class  Tour:
         author = config.get('default',"author")
         print(author)
         header = config.get('default','header')
-        #print(header)
+        
 
 
     def get_exifdata(self):

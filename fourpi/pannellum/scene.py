@@ -50,6 +50,9 @@ class Scene:
         
         self.src = panorama
         self.scene_id = _scene_id_from_image(panorama)
+        dest = _expand(os.path.dirname(self.src))
+        self.output_dir = _get_or_create_path(os.path.join(dest, self.scene_id))
+        logger.info(self.output_dir)
         self.image_quality = kwargs.get('image_quality', DEFAULT_IMAGE_QUALITY)
         self.exifdata = kwargs.get('exifdata', {})
         self.hfov = kwargs.get('hfov', 360)
@@ -130,40 +133,42 @@ class Scene:
     def extract(self):
         """extract all six cubic faces from the panorama"""
         
-        dest = _expand(os.path.dirname(self.src))
-        self.output_dir = _get_or_create_path(os.path.join(dest, self.scene_id))
         output = os.path.join(self.output_dir, self.scene_id)
         script = self._make_script()
         args = (NONA, '-v', '-o', output, script)
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #nona = subprocess.Popen(args, shell=False)
         nona.communicate()
         faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)] 
         return zip(FACES, faces)
 
     def tile(self):
+        """check existing output """
         levels = self.maxLevel
         tile_size = self.tileResolution
         q = int(self.image_quality * 100)
-        logger.info(q)
-        for f, image in self.extract():
-            size = self.cubeResolution
-            face = PIL.Image.open(image)
-            for level in range(levels, 0, -1):
-                level_dir = _get_or_create_path(os.path.join(self.output_dir, str(level)))
-                tiles = int(math.ceil(size / tile_size))
-                if (level < levels):
-                    face = face.resize([size, size], PIL.Image.ANTIALIAS)
-                for i in range(0, tiles):
-                    for j in range(0, tiles):
-                        left = j * tile_size
-                        upper = i * tile_size
-                        right = min(j * tile_size + tile_size, size)
-                        lower = min(i * tile_size + tile_size, size)
-                        tile = face.crop([left, upper, right, lower])
-                        tile.load()
-                        tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=q)
-                size = int(size / 2)
+        
+        if not os.path.isdir(self.output_dir):
+            for f, image in self.extract():
+                size = self.cubeResolution
+                face = PIL.Image.open(image)
+                for level in range(levels, 0, -1):
+                    level_dir = _get_or_create_path(os.path.join(self.output_dir, str(level)))
+                    tiles = int(math.ceil(size / tile_size))
+                    if (level < levels):
+                        face = face.resize([size, size], PIL.Image.ANTIALIAS)
+                    for i in range(0, tiles):
+                        for j in range(0, tiles):
+                            left = j * tile_size
+                            upper = i * tile_size
+                            right = min(j * tile_size + tile_size, size)
+                            lower = min(i * tile_size + tile_size, size)
+                            tile = face.crop([left, upper, right, lower])
+                            tile.load()
+                            tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=q)
+                    size = int(size / 2)
+        else:
+            logger.info("skipping")
+            
 
 
 if __name__ == "__main__":
