@@ -141,13 +141,12 @@ class Scene:
         faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)] 
         return zip(FACES, faces)
 
-    def tile(self):
+    def tile(self, force=False):
         """check existing output """
         levels = self.maxLevel
         tile_size = self.tileResolution
         q = int(self.image_quality * 100)
-        
-        if not os.path.isdir(self.output_dir):
+        if not os.path.isdir(self.output_dir) or force:
             for f, image in self.extract():
                 size = self.cubeResolution
                 face = PIL.Image.open(image)

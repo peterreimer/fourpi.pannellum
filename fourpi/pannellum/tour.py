@@ -112,9 +112,10 @@ def main():
     parser.add_argument("-a", "--author", help="The Creator of this tour.")
     parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug mode.")
     parser.add_argument("-v", "--verbose", action="store_true", help="be verbose")
-    parser.add_argument('-f', '--tile_format',
+    parser.add_argument("-f", "--force", action="store_true", help="force recreation of tiles, even if they already exist.")
+    parser.add_argument('-t', '--tile_format',
                       default=DEFAULT_IMAGE_FORMAT, help='Image format of the tiles (jpg or png). Default: jpg')
-    parser.add_argument('-t', '--tile_folder', help='Tile folder')
+    parser.add_argument('-o', '--tile_folder', help='Tile folder')
     parser.add_argument('-q', '--image_quality', type=float,
                       default=DEFAULT_IMAGE_QUALITY, help='Quality of the image output (0-1). Default: 0.8')
     parser.add_argument('-r', '--resize_filter', default=DEFAULT_RESIZE_FILTER,
@@ -123,13 +124,12 @@ def main():
     args = parser.parse_args()
         
     tour = Tour(author=args.author, debug=args.debug, tile_folder=args.tile_folder, panoramas=args.panoramas)
-
+    
     for scene in tour.scenes:
-        scene.tile()
+        scene.tile(force=args.force)
     
     print(tour.get_json()) 
-        
-
+    print(args.force)
 
 if __name__ == "__main__":
     
@@ -141,6 +141,6 @@ if __name__ == "__main__":
     
     tour = Tour(author="Peter Reimer", debug=True, panoramas=panos)
     for scene in tour.scenes:
-        scene.tile()
+        scene.tile(force=True)
     print(tour.get_json()) 
 
