@@ -134,9 +134,10 @@ def main():
 if __name__ == "__main__":
     
     panos = [
-        "../../panos/Gehry Bauten.jpg",
-        "../../panos/Medienhafen Hyatt.jpg",
-        #s"../../panos/medienhafen-bruecke.jpg"
+        "../../panos/bruecke_klein.jpg",
+        #"../../panos/Gehry Bauten.jpg",
+        #"../../panos/Medienhafen Hyatt.jpg",
+        #"../../panos/medienhafen-bruecke.jpg"
     ]
     
     tour = Tour(author="Peter Reimer", debug=True, panoramas=panos)

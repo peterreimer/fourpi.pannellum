@@ -51,7 +51,7 @@ class Scene:
         self.src = panorama
         self.scene_id = _scene_id_from_image(panorama)
         dest = _expand(os.path.dirname(self.src))
-        self.output_dir = _get_or_create_path(os.path.join(dest, self.scene_id))
+        self.output_dir = os.path.join(dest, self.scene_id)
         logger.info(self.output_dir)
         self.image_quality = kwargs.get('image_quality', DEFAULT_IMAGE_QUALITY)
         self.exifdata = kwargs.get('exifdata', {})
@@ -147,6 +147,7 @@ class Scene:
         tile_size = self.tileResolution
         q = int(self.image_quality * 100)
         if not os.path.isdir(self.output_dir) or force:
+            _get_or_create_path(self.output_dir)# os.makedirs(self.output_dir)
             for f, image in self.extract():
                 size = self.cubeResolution
                 face = PIL.Image.open(image)
@@ -166,7 +167,7 @@ class Scene:
                             tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=q)
                     size = int(size / 2)
         else:
-            logger.info("skipping")
+            logger.info("Skipping extraction and file creation, %s exists" % self.output_dir)
             
 
 
