@@ -36,6 +36,7 @@ class  Tour:
         self.panoramas = panoramas
         self.debug = kwargs.get('debug', False)
         tile_folder = kwargs.get('tile_folder', None)
+        basePath = kwargs.get('basePath', None)
         self.conf = {}
         default = {}
         author = kwargs.get('author', None)
@@ -48,7 +49,7 @@ class  Tour:
         scenes_conf = {}
         self.scenes = []
         for panorama in panoramas:
-            scene = Scene(panorama, exifdata=self.exifdata, image_quality=0.9, tile_folder=tile_folder)
+            scene = Scene(panorama, exifdata=self.exifdata, image_quality=0.9, basePath=basePath, tile_folder=tile_folder)
             self.scenes.append(scene)
             scenes_conf[scene.scene_id] = scene.conf
         
@@ -134,14 +135,14 @@ def main():
 if __name__ == "__main__":
     
     panos = [
-        "../../panos/bruecke_klein.jpg",
+        "../../panos/bruecke2400.jpg",
         #"../../panos/Gehry Bauten.jpg",
         #"../../panos/Medienhafen Hyatt.jpg",
         #"../../panos/medienhafen-bruecke.jpg"
     ]
     
-    tour = Tour(author="Peter Reimer", debug=True, panoramas=panos)
+    tour = Tour(author="Peter Reimer", debug=True, tile_folder='tiles', basePath='../tiles' , panoramas=panos)
     for scene in tour.scenes:
-        scene.tile(force=True)
+        scene.tile(force=False)
     print(tour.get_json()) 
 
