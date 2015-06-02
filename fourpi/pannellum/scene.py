@@ -33,7 +33,7 @@ DEFAULT_IMAGE_QUALITY = 0.8
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 console = logging.StreamHandler()
-formatter = logging.Formatter('%(levelname)s - %(message)s')
+formatter = logging.Formatter('%(levelname)s: %(message)s')
 console.setFormatter(formatter)
 logger.addHandler(console)
 
@@ -144,19 +144,18 @@ class Scene:
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         nona.communicate()
         faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)] 
-        return zip(FACES, faces)
+        self.faces = zip(FACES, faces)
 
     def tile(self, force=False):
         """check existing output """
         levels = self.maxLevel
         tile_size = self.tileResolution
-        #tile_folder = self.tile_folder
         exists = os.path.isdir(self.tile_folder)
-        logger.info("#" + self.tile_folder + ", force: " + str(force) + ", exists: " + str(exists))
-                
         if not exists or force:
             _get_or_create_path(self.tile_folder)# os.makedirs(self.output_dir)
-            for f, image in self.extract():
+            self.extract()
+            for f, image in self.faces:
+                logger.info("tiling face %s" % f)
                 size = self.cubeResolution
                 face = PIL.Image.open(image)
                 for level in range(levels, 0, -1):
@@ -177,9 +176,37 @@ class Scene:
         else:
             logger.info("Skipping extraction and file creation, %s exists" % self.tile_folder)
 
+    def fallback(self, force=False):
+        
+        for f, image in self.faces:
+            logger.debug("fallback face %s" % f)
+            fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
+            face = PIL.Image.open(image)
+            face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
+            face.save(os.path.join(fallback_dir, f + '.jpg'), quality = self.image_quality)
+    
+    def thumbs(self):
+        thumbs_dir = _get_or_create_path(os.path.join(self.tile_folder, 'thumbs'))
+        Ratio = 3
+        h_crop = self.width / Ratio
+        left = 0
+        upper = int(0.5 * (self.height - h_crop))
+        right = self.width
+        lower = upper + h_crop
+        print(lower)
+        pano = PIL.Image.open(self.src)
+        cropped = pano.crop([left, upper, right, lower])
+        cropped = cropped.resize([900, 300], PIL.Image.ANTIALIAS)
+        cropped.save(os.path.join(thumbs_dir,  'preview.jpg'), quality = self.image_quality)
+                
+        
+        
+
 if __name__ == "__main__":
     
-    pano = "../../panos/bruecke2400.jpg"
+    pano = "../../panos/bruecke_klein.jpg"
     scene = Scene(pano, tile_folder="tiles")
     #scene = Scene(pano, image_quality=0.95)
-    scene.tile(force=True)
+    #scene.tile(force=True)
+    #scene.fallback()
+    scene.thumbs()

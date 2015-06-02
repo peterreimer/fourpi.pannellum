@@ -18,7 +18,7 @@ EXIFTOOL = find_executable('exiftool')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 console = logging.StreamHandler()
-formatter = logging.Formatter('%(levelname)s - %(message)s')
+formatter = logging.Formatter('%(levelname)s: %(message)s')
 console.setFormatter(formatter)
 logger.addHandler(console)
 
@@ -135,7 +135,7 @@ def main():
 if __name__ == "__main__":
     
     panos = [
-        "../../panos/bruecke2400.jpg",
+        "../../panos/bruecke_klein.jpg",
         #"../../panos/Gehry Bauten.jpg",
         #"../../panos/Medienhafen Hyatt.jpg",
         #"../../panos/medienhafen-bruecke.jpg"
