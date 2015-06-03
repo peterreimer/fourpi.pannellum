@@ -185,10 +185,9 @@ class Scene:
             face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
             face.save(os.path.join(fallback_dir, f + '.jpg'), quality = self.image_quality)
     
-    def thumbs(self):
+    def thumbs(self, ratio, width):
         thumbs_dir = _get_or_create_path(os.path.join(self.tile_folder, 'thumbs'))
-        Ratio = 3
-        h_crop = self.width / Ratio
+        h_crop = self.width / ratio
         left = 0
         upper = int(0.5 * (self.height - h_crop))
         right = self.width
@@ -196,17 +195,18 @@ class Scene:
         print(lower)
         pano = PIL.Image.open(self.src)
         cropped = pano.crop([left, upper, right, lower])
-        cropped = cropped.resize([900, 300], PIL.Image.ANTIALIAS)
-        cropped.save(os.path.join(thumbs_dir,  'preview.jpg'), quality = self.image_quality)
+        cropped = cropped.resize([width, width / ratio], PIL.Image.ANTIALIAS)
+        cropped.save(os.path.join(thumbs_dir, '%s-%s.jpg' % (self.scene_id, str(width))), quality = self.image_quality)
                 
         
         
 
 if __name__ == "__main__":
     
-    pano = "../../panos/bruecke_klein.jpg"
+    pano = "../../panos/bruecke2400.jpg"
     scene = Scene(pano, tile_folder="tiles")
     #scene = Scene(pano, image_quality=0.95)
     #scene.tile(force=True)
     #scene.fallback()
-    scene.thumbs()
+    for r, w in((4,1000),(3,600),(3,150)):
+        scene.thumbs(r, w)
