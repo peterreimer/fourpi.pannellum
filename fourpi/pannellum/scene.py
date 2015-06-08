@@ -9,6 +9,7 @@ import subprocess
 import os
 import tempfile
 from hotspot import HotSpot
+from exif import Exif
 from utils import _expand, _scene_id_from_image, _get_or_create_path
 
 MAXIMUM_TILESIZE = 640
@@ -66,12 +67,14 @@ class Scene:
         tile_folder = kwargs.get('tile_folder', None)
         self.tile_folder = os.path.join(tile_folder, self.scene_id)
         self.filename = os.path.split(panorama)[1]
-        self.image =  PIL.Image.open(panorama)
-        self.width, self.height = self.image.size
-        self._levels_and_tiles(self.tile_size)
+        #self.image =  PIL.Image.open(panorama)
         self.exif = self.exifdata.get(self.scene_id, {})
+        self.width = self.exif.get('width', 0)
+        self.height = self.exif.get('height', 0)
         self.title = self.exif.get('title', 'n/a')
         self.northOffset = self.exif.get('northOffset', 0)
+        self._levels_and_tiles(self.tile_size)
+        
         conf = {}
         conf['type'] = 'multires'
         conf['northOffset'] = self.northOffset
@@ -117,6 +120,7 @@ class Scene:
             self.cubeResolution = int(tile_fragment * (2 ** MAXIMUM_LEVELS))
             exp = 0
             fragments = 2 ** exp
+            logger.info("width %d" % self.width)
             while (fragments * tile_fragment) < MAXIMUM_TILESIZE:
                 self.tileResolution = int(fragments * tile_fragment)
                 exp = exp + 1
@@ -140,6 +144,7 @@ class Scene:
         """extract all six cubic faces from the panorama"""
         
         output = os.path.join(self.output_dir, self.scene_id)
+        _get_or_create_path(output)
         script = self._make_script()
         args = (NONA, '-v', '-o', output, script)
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -207,15 +212,19 @@ class Scene:
             cropped = cropped.resize([width, height], PIL.Image.ANTIALIAS)
             cropped.save(file_path, quality = self.image_quality)
         else:
-            print('skipping')
+            print('skipping creation of %s' % file_path)
                 
         
         
 
 if __name__ == "__main__":
     
-    pano = "../../panos/bruecke_klein.jpg"
-    scene = Scene(pano, tile_folder="tiles")
+    #pano = "../../panos/bruecke_klein.jpg"
+    pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
+    e = Exif([pano])
+    exifdata = e.get_exifdata()
+
+    scene = Scene(pano, exifdata=exifdata, tile_folder="tiles")
     #scene = Scene(pano, image_quality=0.95)
     #scene.tile(force=True)
     #scene.fallback()
