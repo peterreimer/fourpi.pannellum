@@ -23,7 +23,6 @@ class  Tour:
     def __init__(self, exifdata, panoramas=[], **kwargs):
         
         # self.read_configuration()
-        print(panoramas)
         self.panoramas = panoramas
         self.debug = kwargs.get('debug', False)
         tile_folder = kwargs.get('tile_folder', None)
@@ -90,12 +89,13 @@ def main():
     
     e = Exif(args.panoramas)
     exifdata = e.get_exifdata()
-    
+   
     
     tour = Tour(author=args.author, debug=args.debug, tile_folder='tiles', basePath='../tiles', exifdata=exifdata, panoramas=args.panoramas)
     
     for scene in tour.scenes:
         scene.tile(force=args.force)
+    
     
     print(tour.get_json()) 
     

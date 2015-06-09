@@ -191,30 +191,6 @@ class Scene:
             face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
             face.save(os.path.join(fallback_dir, f + '.jpg'), quality = self.image_quality)
     
-    def sizes(self, name, width, height, sizes_folder=None, force=False):
-        if sizes_folder:
-            sizes_folder = _get_or_create_path(os.path.join(sizes_folder))
-        else:
-            sizes_folder = _get_or_create_path(os.path.join(self.tile_folder, 'sizes'))
-        
-        file_name = '%s-%s.jpg' % (self.scene_id, name)
-        file_path = os.path.join(sizes_folder, file_name)
-        
-        if not os.path.isfile(file_path) or force:
-            left = 0
-            scale = self.width / width
-            upper = int(0.5 * (self.height - height * scale))
-            right = self.width
-            lower = upper + height * scale
-            
-            pano = PIL.Image.open(self.src)
-            cropped = pano.crop([left, upper, right, lower])
-            cropped = cropped.resize([width, height], PIL.Image.ANTIALIAS)
-            cropped.save(file_path, quality = self.image_quality)
-        else:
-            print('skipping creation of %s' % file_path)
-                
-        
         
 
 if __name__ == "__main__":
@@ -228,10 +204,3 @@ if __name__ == "__main__":
     #scene = Scene(pano, image_quality=0.95)
     #scene.tile(force=True)
     #scene.fallback()
-    sizes = {
-        'klein' : (1000, 250),
-        'mittel' : (600, 200),
-        'icon': (150, 50)
-    }
-    for name, size in sizes.iteritems():
-        scene.sizes(name, size[0], size[1])

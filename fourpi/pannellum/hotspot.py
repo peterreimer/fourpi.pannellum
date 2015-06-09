@@ -20,24 +20,27 @@ class HotSpot:
         return 123
     
     def _get_bearing(self):
-        
-        lat1 = self.src.get('lat',None)
-        lng1 = self.src.get('lng',None)
-        
-        lat2 = self.dest.get('lat',None)
-        lng2 = self.dest.get('lng',None)
-        
-        rlat1 = math.radians(lat1)
-        rlat2 = math.radians(lat2)
-        rlng1 = math.radians(lng1)
-        rlng2 = math.radians(lng2)
-        dlng = math.radians(lng2 - lng1)
-         
-        b = math.atan2(math.sin(dlng) * math.cos(rlat2), math.cos(rlat1) * math.sin(rlat2) - math.sin(rlat1) * math.cos(rlat2) * math.cos(dlng)) # bearing calc
-        bd = math.degrees(b)
-        br, bn = divmod(bd + 360, 360) # the bearing remainder and final bearing
-        return bn -self.northOffset
-    
+
+        try:
+            lat1 = self.src.get('lat',None)
+            lng1 = self.src.get('lng',None)
+            
+            lat2 = self.dest.get('lat',None)
+            lng2 = self.dest.get('lng',None)
+            
+            rlat1 = math.radians(lat1)
+            rlat2 = math.radians(lat2)
+            rlng1 = math.radians(lng1)
+            rlng2 = math.radians(lng2)
+            dlng = math.radians(lng2 - lng1)
+             
+            b = math.atan2(math.sin(dlng) * math.cos(rlat2), math.cos(rlat1) * math.sin(rlat2) - math.sin(rlat1) * math.cos(rlat2) * math.cos(dlng)) # bearing calc
+            bd = math.degrees(b)
+            br, bn = divmod(bd + 360, 360) # the bearing remainder and final bearing
+            return bn - self.northOffset
+        except:
+            return 0
+
     def get_conf(self):
         title = self.text
         conf = {}
