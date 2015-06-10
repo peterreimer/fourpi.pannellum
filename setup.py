@@ -29,6 +29,7 @@ setup(name='fourpi.pannellum',
       entry_points={
           'console_scripts':[
             'pannellum=fourpi.pannellum.tour:main',
+            'exif2rst=fourpi.pannellum.exif:main',
           ]  
       },
       )

@@ -3,6 +3,8 @@
 from __future__ import  print_function
 from distutils.spawn import find_executable
 from utils import _scene_id_from_image
+import argparse
+import datetime
 import json
 import os
 import subprocess
@@ -21,6 +23,18 @@ if EXIFTOOL:
     logger.info("exiftool found at %s" % EXIFTOOL)
 else:
     logger.error("EXIFTOOL required but not found.")
+    
+mapping = (
+     ('title', 'DocumentName', ''),
+     ('width', 'ImageWidth', 0),
+     ('height', 'ImageHeight', 0),
+     ('pan', 'InitialViewHeadingDegrees', 0),
+     ('tilt', 'InitialViewPitchDegrees', 0),
+     ('fov', 'InitialHorizontalFOVDegrees', 90),
+     ('lng', 'GPSLongitude', None),
+     ('lat', 'GPSLatitude', None),
+     ('northOffset', 'GPSImgDirection', 0)                     
+)
 
 
 class Exif:
@@ -37,17 +51,6 @@ class Exif:
             if os.path.isfile(panorama):
                 exifjson = subprocess.check_output([EXIFTOOL, '-j', '-n', panorama])
                 exif = json.loads(exifjson)[0]
-                mapping = (
-                     ('title', 'DocumentName', ''),
-                     ('width', 'ImageWidth', 0),
-                     ('height', 'ImageHeight', 0),
-                     ('pan', 'InitialViewHeadingDegrees', 0),
-                     ('tilt', 'InitialViewPitchDegrees', 0),
-                     ('fov', 'InitialHorizontalFOVDegrees', 90),
-                     ('lng', 'GPSLongitude', None),
-                     ('lat', 'GPSLatitude', None),
-                     ('northOffset', 'GPSImgDirection', 0)                     
-                )
                 values = {}
                 for conf, tag, default in mapping:
                     values[conf] = exif.get(tag,default)             
@@ -57,6 +60,44 @@ class Exif:
                 logger.error("File not found: %s" % panorama)
                 
         return exifdata
+
+def now():
+    return datetime.datetime.now().strftime('%Y-%m-%d')
+
+def main():
+    
+    parser = argparse.ArgumentParser(description='Create pelican rst file from exif')
+    parser.add_argument('panorama', metavar='INPUT', help='Panoramic image')
+
+    args = parser.parse_args()
+
+    e = Exif([args.panorama])
+    scene_id = _scene_id_from_image(args.panorama)  
+    fmt = "%-12s: %s"
+    
+    rst = """%(title)s
+%(underline)s
+
+:date:     %(date)s
+:category: Panoramas
+:tags: 
+:template: panorama
+:scene_id: %(scene_id)s
+"""
+    
+    exifs = Exif([args.panorama]).get_exifdata()
+    exif = exifs.get(scene_id, None)
+    if exif['title'] == '':
+        exif['title'] = scene_id
+        logger.warn('No title found, using scene_id')
+    exif['underline'] = '=' * len(exif['title'])
+    exif['scene_id'] = scene_id
+    exif['date'] = now()
+    print(rst % exif)
+    for k, v in exif.iteritems():
+        print(fmt % (k, v))
+    
+
 
 if __name__ == "__main__":
     
