@@ -89,9 +89,6 @@ class Scene:
                 hs = HotSpot(dest_scene_id, self.exifdata[src_scene_id], self.exifdata[dest_scene_id])
                 hotspots.append(hs.get_conf())            
         conf['hotSpots'] = hotspots
-        lat = self.exif.get('lat',None)
-        lng = self.exif.get('lng',None)
-        conf['location'] = {'lat':lat,'lng':lng}
 
         self.conf = conf
     
