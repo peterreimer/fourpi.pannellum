@@ -63,9 +63,9 @@ class  Tour:
 
     def get_json(self):
         if self.debug:
-            return json.dumps(self.conf, indent=4, separators=(',', ': '))
+            return json.dumps(self.conf, sort_keys=True, indent=4, separators=(', ', ': '))
         else:
-            return json.dumps(self.conf,)
+            return json.dumps(self.conf, sort_keys=False, indent=None, separators=(',', ':'))
     
 
 def main():
