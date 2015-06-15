@@ -28,6 +28,8 @@ mapping = (
      ('title', 'DocumentName', ''),
      ('width', 'ImageWidth', 0),
      ('height', 'ImageHeight', 0),
+     ('exposure', 'ExposureTime', None),
+     ('fnumber', 'FNumber', None),
      ('pan', 'InitialViewHeadingDegrees', 0),
      ('tilt', 'InitialViewPitchDegrees', 0),
      ('fov', 'InitialHorizontalFOVDegrees', 90),
