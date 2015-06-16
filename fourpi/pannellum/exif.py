@@ -30,6 +30,8 @@ mapping = (
      ('height', 'ImageHeight', 0),
      ('exposure', 'ExposureTime', None),
      ('fnumber', 'FNumber', None),
+     ('focallength', 'FocalLength', None),
+     ('lens', 'LensModel', None),
      ('pan', 'InitialViewHeadingDegrees', 0),
      ('tilt', 'InitialViewPitchDegrees', 0),
      ('fov', 'InitialHorizontalFOVDegrees', 90),
