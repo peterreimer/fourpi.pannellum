@@ -28,6 +28,7 @@ mapping = (
      ('title', 'DocumentName', ''),
      ('width', 'ImageWidth', 0),
      ('taken', 'DateTimeOriginal', None),
+     ('comment', 'UserComment', ''),
      ('height', 'ImageHeight', 0),
      ('make', 'Make', None),
      ('model', 'Model', None),
@@ -61,7 +62,10 @@ class Exif:
                 exif = json.loads(exifjson)[0]
                 values = {}
                 for conf, tag, default in mapping:
-                    values[conf] = exif.get(tag,default)             
+                    value = exif.get(tag,default)
+                    if conf == 'comment':
+                        value = value.split('\n')
+                    values[conf] = value
                 exifdata[_scene_id_from_image(panorama)] = values
                 logger.info("EXIF data read from %s" % panorama)
             else:
