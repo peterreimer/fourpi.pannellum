@@ -31,6 +31,7 @@ class  Tour:
         self.conf = {}
         default = {}
         author = kwargs.get('author', None)
+        autoRotate = kwargs.get('autoRotate', 0)
         if author:
             default['author'] = author
         
@@ -38,7 +39,7 @@ class  Tour:
         scenes_conf = {}
         self.scenes = []
         for panorama in panoramas:
-            scene = Scene(panorama, exifdata=exifdata, image_quality=0.9, basePath=basePath, tile_folder=tile_folder)
+            scene = Scene(panorama, exifdata=exifdata, image_quality=0.9, autoRotate=autoRotate, basePath=basePath, tile_folder=tile_folder)
             self.scenes.append(scene)
             scenes_conf[scene.scene_id] = scene.conf
             
@@ -113,7 +114,7 @@ if __name__ == "__main__":
     e = Exif(panos)
     exifdata = e.get_exifdata()
 
-    tour = Tour(author="Peter Reimer", debug=True, tile_folder='tiles', basePath='../tiles' , exifdata=exifdata, panoramas=panos)
+    tour = Tour(author="Peter Reimer", debug=True, autoRotate=10, tile_folder='tiles', basePath='../tiles' , exifdata=exifdata, panoramas=panos)
     for scene in tour.scenes:
         scene.tile(force=False)
     print(tour.get_json()) 

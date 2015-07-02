@@ -49,12 +49,16 @@ class Scene:
 
     def __init__(self, panorama, **kwargs):
         
+        conf = {}
         self.src = panorama
         self.scene_id = _scene_id_from_image(panorama)
         dest = _expand(os.path.dirname(self.src))
         self.output_dir = os.path.join(dest, self.scene_id)
         image_quality = kwargs.get('image_quality', DEFAULT_IMAGE_QUALITY)
         self.image_quality  = int(image_quality * 100)
+        autoRotate = kwargs.get('autoRotate',None)
+        if autoRotate:
+            conf['autoRotate'] = autoRotate
         basePath = kwargs.get('basePath', None)
         if basePath:
             self.basePath = '/'.join((basePath, self.scene_id))
@@ -75,7 +79,6 @@ class Scene:
         self.northOffset = self.exif.get('northOffset', 0)
         self._levels_and_tiles(self.tile_size)
         
-        conf = {}
         conf['type'] = 'multires'
         conf['northOffset'] = self.northOffset
         conf['title'] = self.title

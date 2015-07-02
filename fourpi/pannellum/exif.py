@@ -63,8 +63,11 @@ class Exif:
                 values = {}
                 for conf, tag, default in mapping:
                     value = exif.get(tag,default)
+                    # only comment can contain linebreaks
                     if conf == 'comment':
                         value = value.split('\n')
+                    if conf == 'exposure' and value :
+                        value = int(1 / value)
                     values[conf] = value
                 exifdata[_scene_id_from_image(panorama)] = values
                 logger.info("EXIF data read from %s" % panorama)
