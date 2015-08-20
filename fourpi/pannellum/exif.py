@@ -5,6 +5,7 @@ from distutils.spawn import find_executable
 from utils import _scene_id_from_image
 import argparse
 import datetime
+import time
 import json
 import os
 import subprocess
@@ -63,12 +64,16 @@ class Exif:
                 values = {}
                 for conf, tag, default in mapping:
                     value = exif.get(tag,default)
+                    if conf == 'taken':
+                        if value:
+                            value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
                     # only comment can contain linebreaks
                     if conf == 'comment':
                         value = value.split('\n')
                     if conf == 'exposure' and value :
                         value = int(1 / value)
                     values[conf] = value
+                    
                 exifdata[_scene_id_from_image(panorama)] = values
                 logger.info("EXIF data read from %s" % panorama)
             else:
@@ -124,4 +129,5 @@ if __name__ == "__main__":
     ]
     
     e = Exif(panoramas=panos)
-    print(e.get_exifdata())
+    exif = e.get_exifdata() 
+    print(exif['gehry-bauten'])
