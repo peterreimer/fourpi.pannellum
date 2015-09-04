@@ -104,7 +104,8 @@ def main():
 if __name__ == "__main__":
     
     panos = [
-        "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
+        "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
+        #"/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
         #"../../panos/bruecke_klein.jpg",
         #"../../panos/Gehry Bauten.jpg",
         #"../../panos/Medienhafen Hyatt.jpg",
@@ -116,6 +117,6 @@ if __name__ == "__main__":
 
     tour = Tour(author="Peter Reimer", debug=True, autoRotate=10, tile_folder='tiles', basePath='../tiles' , exifdata=exifdata, panoramas=panos)
     for scene in tour.scenes:
-        scene.tile(force=False)
+        scene.tile(force=True)
     print(tour.get_json()) 
 
