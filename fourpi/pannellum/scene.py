@@ -47,16 +47,17 @@ if not NONA:
 
 class Scene:
 
-    def __init__(self, panorama, **kwargs):
+    def __init__(self, panorama, exifdata={}, **kwargs):
         
         conf = {}
         self.src = panorama
+        self.exifdata = exifdata
         self.scene_id = _scene_id_from_image(panorama)
         dest = _expand(os.path.dirname(self.src))
         self.output_dir = os.path.join(dest, self.scene_id)
         image_quality = kwargs.get('image_quality', DEFAULT_IMAGE_QUALITY)
         self.image_quality  = int(image_quality * 100)
-        autoRotate = kwargs.get('autoRotate',None)
+        autoRotate = kwargs.get('autoRotate', None)
         if autoRotate:
             conf['autoRotate'] = autoRotate
         basePath = kwargs.get('basePath', None)
@@ -65,13 +66,11 @@ class Scene:
         else:
             self.basePath = None
         #    self.basePath = self.scene_id
-        self.exifdata = kwargs.get('exifdata', {})
         self.hfov = kwargs.get('hfov', 360)
         self.tile_size = kwargs.get('tile_size', None)
-        tile_folder = kwargs.get('tile_folder', None)
+        tile_folder = kwargs.get('tile_folder', '')
         self.tile_folder = os.path.join(tile_folder, self.scene_id)
         self.filename = os.path.split(panorama)[1]
-        #self.image =  PIL.Image.open(panorama)
         self.exif = self.exifdata.get(self.scene_id, {})
         self.width = self.exif.get('width', 0)
         self.height = self.exif.get('height', 0)
@@ -158,7 +157,7 @@ class Scene:
         tile_size = self.tileResolution
         exists = os.path.isdir(self.tile_folder)
         if not exists or force:
-            _get_or_create_path(self.tile_folder)# os.makedirs(self.output_dir)
+            #_get_or_create_path(self.tile_folder)# os.makedirs(self.output_dir)
             self.extract()
             for f, image in self.faces:
                 if not os.path.isfile(image):
@@ -183,7 +182,7 @@ class Scene:
                                 tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=self.image_quality)
                         size = int(size / 2)
         else:
-            logger.info("Skipping extraction and file creation, %s exists" % self.tile_folder)
+            logger.info("Skipping extraction and tile creation, %s exists" % self.tile_folder)
 
     def fallback(self, force=False):
         
@@ -198,13 +197,13 @@ class Scene:
 
 if __name__ == "__main__":
     
-    pano = "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
-    #pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
+    #pano = "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
+    pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     print(exifdata)
-    #scene = Scene(pano, exifdata=exifdata, tile_folder="tiles")
+    #scene = Scene(pano)
     scene = Scene(pano, exifdata=exifdata)
     #scene = Scene(pano)
-    #scene.tile()
+    scene.tile(force=True)
     #scene.fallback()

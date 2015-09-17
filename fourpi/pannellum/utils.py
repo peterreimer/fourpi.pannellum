@@ -11,5 +11,7 @@ def _get_or_create_path(path):
     return path
 
 def _scene_id_from_image(image):
+    """create an id from the images filename"""
+    
     scene_id = os.path.splitext(os.path.basename(image))[0]
     return scene_id.lower().replace(' ','-')
