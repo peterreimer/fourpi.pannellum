@@ -82,6 +82,9 @@ class Scene:
         conf['northOffset'] = self.northOffset
         conf['title'] = self.title
         conf['compass'] = True
+        minPitch, maxPitch = self._pitch()
+        conf['maxPitch'] =  maxPitch
+        conf['minPitch'] =  minPitch
         
         conf['multiRes'] = self._multires_conf()
         hotspots = []
@@ -107,6 +110,12 @@ class Scene:
         conf['cubeResolution'] = self.cubeResolution
         return conf
 
+    def _pitch(self):
+        """return pitch values for symmetrical eq Panoramas"""
+        vfov = float(self.height) / float(self.width) * float(self.hfov)
+        min = - 0.5 * vfov
+        max = + 0.5 * vfov
+        return min, max
 
     def _levels_and_tiles(self, tile_size):
         """Return the tile width and number of levels """
@@ -197,13 +206,15 @@ class Scene:
 
 if __name__ == "__main__":
     
-    #pano = "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
-    pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
+    pano = "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
+    # pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     print(exifdata)
-    #scene = Scene(pano)
+    # scene = Scene(pano)
     scene = Scene(pano, exifdata=exifdata)
-    #scene = Scene(pano)
-    scene.tile(force=True)
-    #scene.fallback()
+    # scene = Scene(pano)
+    # scene.tile(force=True)
+    scene.tile(force=False)
+    # scene.fallback()
+    print(scene.conf)

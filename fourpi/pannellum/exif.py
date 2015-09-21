@@ -28,9 +28,9 @@ else:
 mapping = (
      ('title', 'DocumentName', ''),
      ('width', 'ImageWidth', 0),
+     ('height', 'ImageHeight', 0),
      ('taken', 'DateTimeOriginal', None),
      ('comment', 'UserComment', ''),
-     ('height', 'ImageHeight', 0),
      ('make', 'Make', None),
      ('model', 'Model', None),
      ('lens', 'LensModel', None),
