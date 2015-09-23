@@ -5,7 +5,6 @@ from distutils.spawn import find_executable
 from utils import _scene_id_from_image
 import argparse
 import datetime
-import time
 import json
 import os
 import subprocess
@@ -14,11 +13,6 @@ import logging
 EXIFTOOL = find_executable('exiftool')
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-console = logging.StreamHandler()
-formatter = logging.Formatter('%(levelname)s: %(message)s')
-console.setFormatter(formatter)
-logger.addHandler(console)
 
 if EXIFTOOL:
     logger.info("exiftool found at %s" % EXIFTOOL)
