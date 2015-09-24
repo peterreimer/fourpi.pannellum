@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import  print_function
 import ConfigParser
-from scene import Scene
-from exif import Exif
-from scene import DEFAULT_IMAGE_FORMAT, DEFAULT_IMAGE_QUALITY, DEFAULT_RESIZE_FILTER
 import json
 import os
 import logging
 import argparse
+from scene import Scene
+from exif import Exif
+from scene import DEFAULT_IMAGE_FORMAT, DEFAULT_IMAGE_QUALITY, DEFAULT_RESIZE_FILTER
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('pannellum')
 
 
 class  Tour:
@@ -75,7 +75,7 @@ def main():
     parser.add_argument("-f", "--force", action="store_true", help="force recreation of tiles, even if they already exist.")
     parser.add_argument('-t', '--tile_format',
                       default=DEFAULT_IMAGE_FORMAT, help='Image format of the tiles (jpg or png). Default: jpg')
-    parser.add_argument('-o', '--tile_folder', help='Tile folder')
+    parser.add_argument('-o', '--tile_folder', help='Tile folder', default='')
     parser.add_argument('-q', '--image_quality', type=float,
                       default=DEFAULT_IMAGE_QUALITY, help='Quality of the image output (0-1). Default: 0.8')
     parser.add_argument('-r', '--resize_filter', default=DEFAULT_RESIZE_FILTER,
@@ -83,15 +83,19 @@ def main():
 
     args = parser.parse_args()
     
+    logger.setLevel(logging.DEBUG)
+    console = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
+    console.setFormatter(formatter)
+    logger.addHandler(console)
     e = Exif(args.panoramas)
     exifdata = e.get_exifdata()
    
     
-    tour = Tour(author=args.author, debug=args.debug, tile_folder='tiles', basePath='../tiles', exifdata=exifdata, panoramas=args.panoramas)
+    tour = Tour(author=args.author, debug=args.debug, tile_folder=args.tile_folder, basePath='../tiles', exifdata=exifdata, panoramas=args.panoramas)
     
     for scene in tour.scenes:
         scene.tile(force=args.force)
-    
     
     print(tour.get_json()) 
     

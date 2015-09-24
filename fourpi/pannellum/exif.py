@@ -12,7 +12,7 @@ import logging
 
 EXIFTOOL = find_executable('exiftool')
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('pannellum.exif')
 
 if EXIFTOOL:
     logger.info("exiftool found at %s" % EXIFTOOL)

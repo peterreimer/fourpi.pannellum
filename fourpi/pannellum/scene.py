@@ -7,6 +7,7 @@ import logging
 import math
 import subprocess
 import os
+import json
 import tempfile
 from hotspot import HotSpot
 from exif import Exif
@@ -31,10 +32,9 @@ DEFAULT_RESIZE_FILTER = PIL.Image.ANTIALIAS
 DEFAULT_IMAGE_FORMAT = 'jpg'
 DEFAULT_IMAGE_QUALITY = 0.8
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('pannellum.scene')
 
 NONA =find_executable('nona')
-
 
 if not NONA:
     logger.error("nona required but not found.")
@@ -105,6 +105,9 @@ class Scene:
         conf['maxLevel'] =  self.maxLevel
         conf['cubeResolution'] = self.cubeResolution
         return conf
+
+    def get_json(self):
+        return json.dumps(self.conf, sort_keys=True, indent=4, separators=(', ', ': '))
 
     def _pitch(self):
         """return pitch values for symmetrical eq Panoramas"""
@@ -202,15 +205,20 @@ class Scene:
 
 if __name__ == "__main__":
     
-    #pano = "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
-    pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
+    logger.setLevel(logging.DEBUG)
+    console = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
+    console.setFormatter(formatter)
+    logger.addHandler(console)
+
+    pano = "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
+    #pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
-    print(exifdata)
     # scene = Scene(pano)
     scene = Scene(pano, exifdata=exifdata)
     # scene = Scene(pano)
     # scene.tile(force=True)
     scene.tile(force=False)
     # scene.fallback()
-    print(scene.conf)
+    print(scene.get_json())
