@@ -2,23 +2,25 @@
 
 from __future__ import print_function
 from distutils.spawn import find_executable
-import PIL.Image
 import logging
 import math
 import subprocess
 import os
 import json
 import tempfile
-from hotspot import HotSpot
-from exif import Exif
-from utils import _expand, _scene_id_from_image, _get_or_create_path
+
+import PIL.Image
+
+from fourpi.pannellum.hotspot import HotSpot
+from fourpi.pannellum.exif import Exif
+from fourpi.pannellum.utils import _expand, _scene_id_from_image, _get_or_create_path
 
 MAXIMUM_TILESIZE = 640
 MAXIMUM_LEVELS = 6
 EXTENSION = "jpg"
 
-FACES = [ "f", "b", "l", "r", "u", "d" ]
-ANGLES = [(0,0),(-180,0),(90,0),(-90,0),(0,-90),(0,90)]
+FACES = ["f", "b", "l", "r", "u", "d"]
+ANGLES = [(0, 0), (-180, 0), (90, 0), (-90, 0), (0, -90), (0, 90)]
 
 RESIZE_FILTERS = {
     'cubic': PIL.Image.CUBIC,
@@ -34,11 +36,10 @@ DEFAULT_IMAGE_QUALITY = 0.8
 
 logger = logging.getLogger('pannellum.scene')
 
-NONA =find_executable('nona')
+NONA = find_executable('nona')
 
 if not NONA:
     logger.error("nona required but not found.")
-    
 
 
 class Scene:
@@ -52,7 +53,7 @@ class Scene:
         dest = _expand(os.path.dirname(self.src))
         self.output_dir = os.path.join(dest, self.scene_id)
         image_quality = kwargs.get('image_quality', DEFAULT_IMAGE_QUALITY)
-        self.image_quality  = int(image_quality * 100)
+        self.image_quality = int(image_quality * 100)
         autoRotate = kwargs.get('autoRotate', None)
         if autoRotate:
             conf['autoRotate'] = autoRotate
@@ -73,14 +74,14 @@ class Scene:
         self.title = self.exif.get('title', 'n/a')
         self.northOffset = self.exif.get('northOffset', 0)
         self._levels_and_tiles(self.tile_size)
-        
+
         conf['type'] = 'multires'
         conf['northOffset'] = self.northOffset
         conf['title'] = self.title
         conf['compass'] = True
         minPitch, maxPitch = self._pitch()
-        conf['maxPitch'] =  maxPitch
-        conf['minPitch'] =  minPitch
+        conf['maxPitch'] = maxPitch
+        conf['minPitch'] = minPitch
         
         conf['multiRes'] = self._multires_conf()
         hotspots = []
@@ -90,19 +91,17 @@ class Scene:
                 hs = HotSpot(dest_scene_id, self.exifdata[src_scene_id], self.exifdata[dest_scene_id])
                 hotspots.append(hs.get_conf())            
         conf['hotSpots'] = hotspots
-
         self.conf = conf
-    
-   
+
     def _multires_conf(self):
-        
+
         conf = {}
         conf['basePath'] = self.basePath 
         conf['path'] = '/%l/%s%y_%x'
-        conf['fallbackPath'] =  "/fallback/%s"
+        conf['fallbackPath'] = "/fallback/%s"
         conf['extension'] = EXTENSION
-        conf['tileResolution'] =  self.tileResolution
-        conf['maxLevel'] =  self.maxLevel
+        conf['tileResolution'] = self.tileResolution
+        conf['maxLevel'] = self.maxLevel
         conf['cubeResolution'] = self.cubeResolution
         return conf
 
