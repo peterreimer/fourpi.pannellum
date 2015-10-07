@@ -4,13 +4,14 @@
 """
 from __future__ import  print_function
 from distutils.spawn import find_executable
-from forpi.pannellum.utils import _scene_id_from_image
 import argparse
 import datetime
 import json
 import os
 import subprocess
 import logging
+
+from fourpi.pannellum.utils import _scene_id_from_image
 
 EXIFTOOL = find_executable('exiftool')
 

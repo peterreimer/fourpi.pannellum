@@ -109,7 +109,8 @@ class Scene:
         return json.dumps(self.conf, sort_keys=True, indent=4, separators=(', ', ': '))
 
     def _pitch(self):
-        """return pitch values for symmetrical eq Panoramas"""
+        """return pitch values for symmetrical equirectlinear Panoramas"""
+        
         vfov = float(self.height) / float(self.width) * float(self.hfov)
         min = - 0.5 * vfov
         max = + 0.5 * vfov
@@ -117,6 +118,7 @@ class Scene:
 
     def _levels_and_tiles(self, tile_size):
         """Return the tile width and number of levels """
+        
         raw_face_width = self.width / math.pi
         if tile_size:
             self.tileResolution = tile_size
@@ -160,6 +162,7 @@ class Scene:
 
     def tile(self, force=False):
         """check existing output """
+        
         levels = self.maxLevel
         tile_size = self.tileResolution
         exists = os.path.isdir(self.tile_folder)
@@ -198,9 +201,8 @@ class Scene:
             fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
             face = PIL.Image.open(image)
             face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
-            face.save(os.path.join(fallback_dir, f + '.jpg'), quality = self.image_quality)
-    
-        
+            face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
+
 
 if __name__ == "__main__":
     
