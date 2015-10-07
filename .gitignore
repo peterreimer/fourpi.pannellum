@@ -9,4 +9,5 @@ panos
 .pydevproject
 .settings
 # temp stuff
+*.swp
 *~
