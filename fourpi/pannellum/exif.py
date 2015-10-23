@@ -23,24 +23,24 @@ else:
     logger.error("EXIFTOOL required but not found.")
 
 mapping = (
-    ('title', 'DocumentName', ''),
-    ('width', 'ImageWidth', 0),
-    ('height', 'ImageHeight', 0),
-    ('taken', 'DateTimeOriginal', None),
-    ('comment', 'UserComment', ''),
-    ('make', 'Make', None),
-    ('model', 'Model', None),
-    ('lens', 'LensModel', None),
-    ('exposure', 'ExposureTime', None),
-    ('fnumber', 'FNumber', None),
-    ('focallength', 'FocalLength', None),
-    ('pan', 'InitialViewHeadingDegrees', 0),
-    ('tilt', 'InitialViewPitchDegrees', 0),
-    ('fov', 'InitialHorizontalFOVDegrees', 90),
-    ('count', 'SourcePhotosCount', 1),
-    ('lng', 'GPSLongitude', None),
-    ('lat', 'GPSLatitude', None),
-    ('northOffset', 'GPSImgDirection', 0)
+    ('title', 'DocumentName', '', 'string'),
+    ('width', 'ImageWidth', 0, 'int'),
+    ('height', 'ImageHeight', 0, 'int'),
+    ('taken', 'DateTimeOriginal', None, 'date'),
+    ('comment', 'UserComment', '', 'lines'),
+    ('make', 'Make', None, 'string'),
+    ('model', 'Model', None, 'string'),
+    ('lens', 'LensModel', None, 'string'),
+    ('exposure', 'ExposureTime', None, 'float'),
+    ('fnumber', 'FNumber', None, 'float'),
+    ('focallength', 'FocalLength', None, ''),
+    ('pan', 'InitialViewHeadingDegrees', 0, 'float'),
+    ('tilt', 'InitialViewPitchDegrees', 0, 'float'),
+    ('fov', 'InitialHorizontalFOVDegrees', 90, 'float'),
+    ('count', 'SourcePhotosCount', 1, 'int'),
+    ('lng', 'GPSLongitude', None, 'float'),
+    ('lat', 'GPSLatitude', None, 'float'),
+    ('northOffset', 'GPSImgDirection', 0, 'float')
 )
 
 class Exif:
@@ -53,26 +53,32 @@ class Exif:
 
         exifdata = {}
         for panorama in self.panoramas:
-            if os.path.isfile(panorama):
-                exifjson = subprocess.check_output([EXIFTOOL, '-j', '-n', panorama])
-                exif = json.loads(exifjson)[0]
-                values = {}
-                for conf, tag, default in mapping:
-                    value = exif.get(tag, default)
-                    if conf == 'taken':
-                        if value:
-                            value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
-                    # only comment can contain linebreaks
-                    if conf == 'comment':
-                        value = value.split('\n')
-                    if conf == 'exposure' and value:
-                        value = int(1 / value)
-                    values[conf] = value
-                    
-                exifdata[_scene_id_from_image(panorama)] = values
-                logger.info("EXIF data read from %s" % panorama)
-            else:
+            if not os.path.isfile(panorama):
                 logger.error("File not found: %s" % panorama)
+                break
+            exifjson = subprocess.check_output([EXIFTOOL, '-j', '-n', panorama])
+            exif = json.loads(exifjson)[0]
+            values = {}
+            for conf, tag, default, type in mapping:
+                if not exif.has_key(tag):
+                    value = default
+                    logger.warn("Attribut %s missing in %s, using default: %s" % (tag, panorama, default))
+                else:
+                    value = exif[tag]
+                    logger.info("%s: %s" % (tag, value))
+                value = exif.get(tag, default)
+                if type == 'date':
+                    if value:
+                        value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
+                # only comment can contain linebreaks
+                if conf == 'comment':
+                    value = value.split('\n')
+                if conf == 'exposure' and value:
+                    value = int(1 / value)
+                values[conf] = value
+                
+            exifdata[_scene_id_from_image(panorama)] = values
+            logger.info("EXIF data read from %s" % panorama)
 
         return exifdata
 
@@ -116,13 +122,20 @@ def main():
 
 if __name__ == "__main__":
     
+    logger.setLevel(logging.WARN)
+    console = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
+    console.setFormatter(formatter)
+    logger.addHandler(console)
+    
     panos = [
-        "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
-        #"../../panos/Gehry Bauten.jpg",
+        #"/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
+        "../../panos/mafra.jpg",
         #"../../panos/Medienhafen Hyatt.jpg",
         #"../../panos/medienhafen-bruecke.jpg"
     ]
     
     e = Exif(panoramas=panos)
     exif = e.get_exifdata() 
-    print(exif['gehry-bauten'])
+    # print(exif['gehry-bauten'])
+    print(exif)
