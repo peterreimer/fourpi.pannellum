@@ -53,6 +53,7 @@ class Exif:
 
         exifdata = {}
         for panorama in self.panoramas:
+            scene_id = _scene_id_from_image(panorama)
             if not os.path.isfile(panorama):
                 logger.error("File not found: %s" % panorama)
                 break
@@ -62,22 +63,20 @@ class Exif:
             for conf, tag, default, type in mapping:
                 if not exif.has_key(tag):
                     value = default
-                    logger.warn("Attribut %s missing in %s, using default: %s" % (tag, panorama, default))
+                    logger.warn("%s: missing %s (dafault=%s)" % (scene_id, tag, default))
                 else:
                     value = exif[tag]
                     logger.info("%s: %s" % (tag, value))
-                value = exif.get(tag, default)
-                if type == 'date':
-                    if value:
-                        value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
-                # only comment can contain linebreaks
-                if conf == 'comment':
+                
+                if value and type == 'date':
+                    value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
+                if type == 'lines':
                     value = value.split('\n')
                 if conf == 'exposure' and value:
                     value = int(1 / value)
                 values[conf] = value
                 
-            exifdata[_scene_id_from_image(panorama)] = values
+            exifdata[scene_id] = values
             logger.info("EXIF data read from %s" % panorama)
 
         return exifdata
