@@ -79,9 +79,12 @@ class Scene:
         conf['northOffset'] = self.northOffset
         conf['title'] = self.title
         conf['compass'] = True
-        minPitch, maxPitch = self._pitch()
-        conf['maxPitch'] = maxPitch
-        conf['minPitch'] = minPitch
+        # minPitch, maxPitch = self._pitch()
+        # conf['maxPitch'] = maxPitch
+        # conf['minPitch'] = minPitch
+        conf['yaw'] = self.exif.get('pan', 0)
+        conf['pitch'] = self.exif.get('tilt', 0)
+        conf['hfov'] = self.exif.get('fov', 0)
         
         conf['multiRes'] = self._multires_conf()
         hotspots = []
