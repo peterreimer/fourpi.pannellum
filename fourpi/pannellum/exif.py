@@ -33,6 +33,7 @@ mapping = (
     ('lens', 'LensModel', None, 'string'),
     ('exposure', 'ExposureTime', None, 'float'),
     ('fnumber', 'FNumber', None, 'float'),
+    ('iso', 'ISO', None, 'int'),
     ('focallength', 'FocalLength', None, ''),
     ('pan', 'InitialViewHeadingDegrees', 0, 'float'),
     ('tilt', 'InitialViewPitchDegrees', 0, 'float'),
@@ -63,7 +64,7 @@ class Exif:
             for conf, tag, default, type in mapping:
                 if not exif.has_key(tag):
                     value = default
-                    logger.warn("%s: missing %s (dafault=%s)" % (scene_id, tag, default))
+                    logger.warn("%s: missing %s (default=%s)" % (scene_id, tag, default))
                 else:
                     value = exif[tag]
                     logger.info("%s: %s" % (tag, value))
