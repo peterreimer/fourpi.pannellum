@@ -72,7 +72,7 @@ def main():
     parser.add_argument("-a", "--author", help="The Creator of this tour.")
     parser.add_argument("-d", "--debug", action="store_true", help="Turn on debug mode.")
     parser.add_argument("-v", "--verbose", action="store_true", help="be verbose")
-    parser.add_argument("-t", "--tile", action="store_true", help="Remap and the panorama.")
+    parser.add_argument("-t", "--tile", action="store_true", help="Remap and tile the panorama.")
     parser.add_argument("-p", "--projection", default='equirectangular',
                       help='Projection type. Can be equirectangular, cubemap, or multires. Default: equirectangular')
     parser.add_argument("-f", "--force", action="store_true", help="force recreation of tiles, even if they already exist.")
@@ -97,10 +97,12 @@ def main():
     exifdata = e.get_exifdata()
    
     
-    tour = Tour(author=args.author, debug=args.debug, tile_folder=args.tile_folder, basePath='../tiles', exifdata=exifdata, panoramas=args.panoramas)
-    
-    #for scene in tour.scenes:
-    #    scene.tile(force=args.force)
+    tour = Tour(author=args.author, debug=args.debug, tile_folder=args.tile_folder, exifdata=exifdata, panoramas=args.panoramas)
+   
+    if args.tile:
+        for scene in tour.scenes:
+            scene.tile(force=args.force)
+            scene.fallback(force=args.force)
     
     print(tour.get_json()) 
     

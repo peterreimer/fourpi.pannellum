@@ -155,7 +155,8 @@ class Scene:
         """extract all six cubic faces from the panorama"""
         
         output = os.path.join(self.output_dir, self.scene_id)
-        _get_or_create_path(output)
+        od = _get_or_create_path(self.output_dir)
+        logger.info("Outputdir %s created" % od)
         script = self._make_script()
         args = (NONA, '-v', '-o', output, script)
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
