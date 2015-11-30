@@ -199,14 +199,15 @@ class Scene:
             logger.info("Skipping extraction and tile creation, %s exists" % self.tile_folder)
 
     def fallback(self, force=False):
-        
-        for f, image in self.faces:
-            logger.debug("fallback face %s" % f)
-            fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
-            face = PIL.Image.open(image)
-            face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
-            face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
-
+        if hasattr(self, 'faces'):        
+            for f, image in self.faces:
+                logger.debug("fallback face %s" % f)
+                fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
+                face = PIL.Image.open(image)
+                face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
+                face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
+        else:
+            logger.error("no faces for %s" % self.scene_id )
 
 if __name__ == "__main__":
     
@@ -216,14 +217,13 @@ if __name__ == "__main__":
     console.setFormatter(formatter)
     logger.addHandler(console)
 
-    pano = "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
-    #pano = "/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
+    pano = "../../tests/panos/referenz.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     # scene = Scene(pano)
-    scene = Scene(pano, exifdata=exifdata)
+    scene = Scene(pano, exifdata=exifdata, tile_size=256)
     # scene = Scene(pano)
-    # scene.tile(force=True)
-    scene.tile(force=False)
+    scene.tile(force=True)
+    # scene.tile(force=False)
     # scene.fallback()
     print(scene.get_json())

@@ -1,8 +1,6 @@
 dist
-panos
 *.egg-info
 *.pyc
-*.jpg
 
 # eclipse
 .project
