@@ -41,14 +41,12 @@ NONA = find_executable('nona')
 if not NONA:
     logger.error("nona required but not found.")
 
-
 class Scene:
     """A panoramic scene
     
     With hotspots and everything.
     """
-    
-    
+
     def __init__(self, panorama, exifdata={}, **kwargs):
 
         conf = {}
@@ -100,12 +98,14 @@ class Scene:
                 hotspots.append(hs.get_conf())            
         conf['hotSpots'] = hotspots
         self.conf = conf
+        self.faces = []
 
     def _multires_conf(self):
-        """Configuration for a multiresoution scene"""
+        """Configuration for a multiresolution scene"""
         
         conf = {}
-        conf['basePath'] = self.basePath 
+        if self.basePath:
+            conf['basePath'] = self.basePath 
         conf['path'] = '/%l/%s%y_%x'
         conf['fallbackPath'] = "/fallback/%s"
         conf['extension'] = EXTENSION
@@ -122,9 +122,9 @@ class Scene:
         """return pitch values for symmetrical equirectlinear Panoramas"""
         
         vfov = float(self.height) / float(self.width) * float(self.hfov)
-        min = - 0.5 * vfov
-        max = + 0.5 * vfov
-        return min, max
+        minPitch = - 0.5 * vfov
+        maxPitch = + 0.5 * vfov
+        return minPitch, maxPitch
 
     def _levels_and_tiles(self, tile_size):
         """Return the tile width and number of levels """
@@ -170,9 +170,9 @@ class Scene:
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         nona.communicate()
         faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)] 
-        print(faces)
         self.faces = zip(FACES, faces)
-
+        print(self.faces)
+         
     def tile(self, force=False):
         """check existing output """
         
