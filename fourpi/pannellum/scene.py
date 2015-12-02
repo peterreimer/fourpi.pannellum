@@ -43,9 +43,14 @@ if not NONA:
 
 
 class Scene:
-
+    """A panoramic scene
+    
+    With hotspots and everything.
+    """
+    
+    
     def __init__(self, panorama, exifdata={}, **kwargs):
-        
+
         conf = {}
         self.src = panorama
         self.exifdata = exifdata
@@ -85,7 +90,7 @@ class Scene:
         conf['yaw'] = self.exif.get('pan', 0)
         conf['pitch'] = self.exif.get('tilt', 0)
         conf['hfov'] = self.exif.get('fov', 0)
-        
+
         conf['multiRes'] = self._multires_conf()
         hotspots = []
         for dest_scene_id in self.exifdata.keys():
@@ -97,7 +102,8 @@ class Scene:
         self.conf = conf
 
     def _multires_conf(self):
-
+        """Configuration for a multiresoution scene"""
+        
         conf = {}
         conf['basePath'] = self.basePath 
         conf['path'] = '/%l/%s%y_%x'
@@ -109,6 +115,7 @@ class Scene:
         return conf
 
     def get_json(self):
+        """return the configuration in pannellums json format"""
         return json.dumps(self.conf, sort_keys=True, indent=4, separators=(', ', ': '))
 
     def _pitch(self):
@@ -125,30 +132,31 @@ class Scene:
         raw_face_width = self.width / math.pi
         if tile_size:
             self.tileResolution = tile_size
-            self.cubeResolution =int(raw_face_width)
+            self.cubeResolution = int(raw_face_width)
         else:
             tile_fragment = math.floor(raw_face_width / (2 ** MAXIMUM_LEVELS))
             self.cubeResolution = int(tile_fragment * (2 ** MAXIMUM_LEVELS))
             exp = 0
             fragments = 2 ** exp
-            logger.info("width %d" % self.width)
+            logger.info("width %d", self.width)
             while (fragments * tile_fragment) < MAXIMUM_TILESIZE:
                 self.tileResolution = int(fragments * tile_fragment)
                 exp = exp + 1
                 fragments = 2 ** exp
         self.maxLevel = int(math.log(self.cubeResolution / self.tileResolution, 2) + 1)
         scale = self.cubeResolution / raw_face_width
-        logger.info("Scaling: %s, Tile: %s, Face: %s " % (scale, self.tileResolution, self.cubeResolution) )
+        logger.info("Scaling: %s, Tile: %s, Face: %s ", scale, self.tileResolution, self.cubeResolution)
         return scale
 
     def _make_script(self):
-
+        """Create """
+        
         tmp_fd, tmp_name = tempfile.mkstemp(".txt", "nona")
         script = os.fdopen(tmp_fd, "w")
-        script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (self.cubeResolution,self.cubeResolution))
+        script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (self.cubeResolution, self.cubeResolution))
         for yaw, pitch in ANGLES:
             script.write('i f4 w%s h%s y%s p%s r0 v%s n"%s"\n' % (self.width, self.height, yaw, pitch, self.hfov, _expand(self.src)))
-        logger.info("Script created at %s" % tmp_name)
+        logger.info("Script created at %s", tmp_name)
         return tmp_name
     
     def extract(self):
@@ -156,12 +164,13 @@ class Scene:
         
         output = os.path.join(self.output_dir, self.scene_id)
         od = _get_or_create_path(self.output_dir)
-        logger.info("Outputdir %s created" % od)
+        logger.info("Outputdir %s created", od)
         script = self._make_script()
         args = (NONA, '-v', '-o', output, script)
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         nona.communicate()
         faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)] 
+        print(faces)
         self.faces = zip(FACES, faces)
 
     def tile(self, force=False):
@@ -175,15 +184,15 @@ class Scene:
             self.extract()
             for f, image in self.faces:
                 if not os.path.isfile(image):
-                    logger.info(" face %s not found" % f)
+                    logger.info(" face %s not found", f)
                 else:
-                    logger.info("tiling face %s" % f)
+                    logger.info("tiling face %s", f)
                     size = self.cubeResolution
                     face = PIL.Image.open(image)
                     for level in range(levels, 0, -1):
                         level_dir = _get_or_create_path(os.path.join(self.tile_folder, str(level)))
                         tiles = int(math.ceil(size / tile_size))
-                        if (level < levels):
+                        if level < levels:
                             face = face.resize([size, size], PIL.Image.ANTIALIAS)
                         for i in range(0, tiles):
                             for j in range(0, tiles):
@@ -196,18 +205,20 @@ class Scene:
                                 tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=self.image_quality)
                         size = int(size / 2)
         else:
-            logger.info("Skipping extraction and tile creation, %s exists" % self.tile_folder)
+            logger.info("Skipping extraction and tile creation, %s exists", self.tile_folder)
 
     def fallback(self, force=False):
+        """Scaling down the cubuc faces as fallback option"""
+        
         if hasattr(self, 'faces'):        
             for f, image in self.faces:
-                logger.debug("fallback face %s" % f)
+                logger.debug("fallback face %s", f)
                 fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
                 face = PIL.Image.open(image)
                 face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
                 face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
         else:
-            logger.error("no faces for %s" % self.scene_id )
+            logger.error("no faces for %s", self.scene_id)
 
 if __name__ == "__main__":
     
