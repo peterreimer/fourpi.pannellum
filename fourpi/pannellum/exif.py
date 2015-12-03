@@ -56,7 +56,7 @@ class Exif:
         for panorama in self.panoramas:
             scene_id = _scene_id_from_image(panorama)
             if not os.path.isfile(panorama):
-                logger.error("File not found: %s" % panorama)
+                logger.error("File not found: %s", panorama)
                 break
             exifjson = subprocess.check_output([EXIFTOOL, '-j', '-n', panorama])
             exif = json.loads(exifjson)[0]
@@ -64,11 +64,11 @@ class Exif:
             for conf, tag, default, type in mapping:
                 if not exif.has_key(tag):
                     value = default
-                    logger.warn("%s: missing %s (default=%s)" % (scene_id, tag, default))
+                    logger.warn("%s: missing %s (default=%s)", scene_id, tag, default)
                 else:
                     value = exif[tag]
-                    logger.info("%s: %s" % (tag, value))
-                
+                    logger.info("%s: %s", tag, value)
+
                 if value and type == 'date':
                     value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
                 if type == 'lines':
@@ -76,9 +76,9 @@ class Exif:
                 if conf == 'exposure' and value:
                     value = int(1 / value)
                 values[conf] = value
-                
+
             exifdata[scene_id] = values
-            logger.info("EXIF data read from %s" % panorama)
+            logger.info("EXIF data read from %s", panorama)
 
         return exifdata
 
@@ -93,9 +93,9 @@ def main():
     args = parser.parse_args()
 
     e = Exif([args.panorama])
-    scene_id = _scene_id_from_image(args.panorama)  
+    scene_id = _scene_id_from_image(args.panorama)
     fmt = "%-12s: %s"
-    
+
     rst = """%(title)s
 %(underline)s
 
@@ -105,7 +105,7 @@ def main():
 :template: panorama
 :scene_id: %(scene_id)s
 """
-    
+
     exifs = Exif([args.panorama]).get_exifdata()
     exif = exifs.get(scene_id, None)
     if exif['title'] == '':
@@ -117,25 +117,21 @@ def main():
     print(rst % exif)
     for k, v in exif.iteritems():
         print(fmt % (k, v))
-    
-
 
 if __name__ == "__main__":
-    
+
     logger.setLevel(logging.WARN)
     console = logging.StreamHandler()
     formatter = logging.Formatter('%(levelname)s: %(message)s')
     console.setFormatter(formatter)
     logger.addHandler(console)
-    
+
     panos = [
-        #"/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
-        "../../panos/mafra.jpg",
-        #"../../panos/Medienhafen Hyatt.jpg",
-        #"../../panos/medienhafen-bruecke.jpg"
+        "../../tests/panos/referenz.jpg"
     ]
-    
+
     e = Exif(panoramas=panos)
     exif = e.get_exifdata() 
     # print(exif['gehry-bauten'])
     print(exif)
+    

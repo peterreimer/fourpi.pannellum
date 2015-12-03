@@ -43,14 +43,16 @@ if not NONA:
 
 class Scene:
     """A panoramic scene
-    
+
     With hotspots and everything.
     """
 
-    def __init__(self, panorama, exifdata={}, **kwargs):
+    def __init__(self, panorama, exifdata=None, **kwargs):
 
         conf = {}
         self.src = panorama
+        if not exifdata:
+            exifdata = {}
         self.exifdata = exifdata
         self.scene_id = _scene_id_from_image(panorama)
         dest = _expand(os.path.dirname(self.src))
@@ -95,17 +97,17 @@ class Scene:
             src_scene_id = self.scene_id
             if src_scene_id != dest_scene_id:
                 hs = HotSpot(dest_scene_id, self.exifdata[src_scene_id], self.exifdata[dest_scene_id])
-                hotspots.append(hs.get_conf())            
+                hotspots.append(hs.get_conf())
         conf['hotSpots'] = hotspots
         self.conf = conf
         self.faces = []
 
     def _multires_conf(self):
         """Configuration for a multiresolution scene"""
-        
+
         conf = {}
         if self.basePath:
-            conf['basePath'] = self.basePath 
+            conf['basePath'] = self.basePath
         conf['path'] = '/%l/%s%y_%x'
         conf['fallbackPath'] = "/fallback/%s"
         conf['extension'] = EXTENSION
@@ -120,7 +122,7 @@ class Scene:
 
     def _pitch(self):
         """return pitch values for symmetrical equirectlinear Panoramas"""
-        
+
         vfov = float(self.height) / float(self.width) * float(self.hfov)
         minPitch = - 0.5 * vfov
         maxPitch = + 0.5 * vfov
@@ -128,7 +130,7 @@ class Scene:
 
     def _levels_and_tiles(self, tile_size):
         """Return the tile width and number of levels """
-        
+
         raw_face_width = self.width / math.pi
         if tile_size:
             self.tileResolution = tile_size
@@ -150,7 +152,7 @@ class Scene:
 
     def _make_script(self):
         """Create """
-        
+
         tmp_fd, tmp_name = tempfile.mkstemp(".txt", "nona")
         script = os.fdopen(tmp_fd, "w")
         script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (self.cubeResolution, self.cubeResolution))
@@ -158,10 +160,10 @@ class Scene:
             script.write('i f4 w%s h%s y%s p%s r0 v%s n"%s"\n' % (self.width, self.height, yaw, pitch, self.hfov, _expand(self.src)))
         logger.info("Script created at %s", tmp_name)
         return tmp_name
-    
+
     def extract(self):
         """extract all six cubic faces from the panorama"""
-        
+
         output = os.path.join(self.output_dir, self.scene_id)
         od = _get_or_create_path(self.output_dir)
         logger.info("Outputdir %s created", od)
@@ -169,13 +171,12 @@ class Scene:
         args = (NONA, '-v', '-o', output, script)
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         nona.communicate()
-        faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)] 
+        faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)]
         self.faces = zip(FACES, faces)
-        print(self.faces)
-         
+
     def tile(self, force=False):
         """check existing output """
-        
+
         levels = self.maxLevel
         tile_size = self.tileResolution
         exists = os.path.isdir(self.tile_folder)
@@ -209,8 +210,8 @@ class Scene:
 
     def fallback(self, force=False):
         """Scaling down the cubuc faces as fallback option"""
-        
-        if hasattr(self, 'faces'):        
+
+        if hasattr(self, 'faces'):
             for f, image in self.faces:
                 logger.debug("fallback face %s", f)
                 fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
@@ -221,7 +222,7 @@ class Scene:
             logger.error("no faces for %s", self.scene_id)
 
 if __name__ == "__main__":
-    
+
     logger.setLevel(logging.DEBUG)
     console = logging.StreamHandler()
     formatter = logging.Formatter('%(levelname)s: %(message)s')
