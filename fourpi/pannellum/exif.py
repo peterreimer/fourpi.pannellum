@@ -27,7 +27,7 @@ mapping = (
     ('width', 'ImageWidth', 0, 'int'),
     ('height', 'ImageHeight', 0, 'int'),
     ('taken', 'DateTimeOriginal', None, 'date'),
-    ('comment', 'UserComment', '', 'lines'),
+    ('comment', 'UserComment', None, 'lines'),
     ('make', 'Make', None, 'string'),
     ('model', 'Model', None, 'string'),
     ('lens', 'LensModel', None, 'string'),
@@ -68,10 +68,9 @@ class Exif:
                 else:
                     value = exif[tag]
                     logger.info("%s: %s", tag, value)
-
                 if value and type == 'date':
                     value = datetime.datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
-                if type == 'lines':
+                if type == 'lines' and value:
                     value = value.split('\n')
                 if conf == 'exposure' and value:
                     value = int(1 / value)
