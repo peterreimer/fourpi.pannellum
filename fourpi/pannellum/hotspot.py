@@ -1,7 +1,11 @@
 #!/usr/bin/env  python
 
 from __future__ import print_function
+import logging
+from haversine import haversine                    
 import math
+
+logger = logging.getLogger('pannellum.hotspot')
 
 class HotSpot:
 
@@ -13,11 +17,24 @@ class HotSpot:
         self.text = dest.get('title', 'n/a')
         self.lat = src.get('lat', None)
         self.lng = src.get('lng', None)
+        
+        self.lat1 = self.src.get('lat', None)
+        self.lng1 = self.src.get('lng', None)
+
+        self.lat2 = self.dest.get('lat', None)
+        self.lng2 = self.dest.get('lng', None)
+
+        
         self.northOffset = src.get('northOffset', 0)
 
-    def distance(self):
-        return 123
-
+    def _get_distance(self):
+        try:
+            distance = haversine((self.lat1, self.lng1), (self.lat2, self.lat2))
+        except:
+            distance = None
+        logger.warn("%s %s: %s", self.scene_id, self.dest['title'], distance )
+        return distance
+ 
     def _get_bearing(self):
 
         try:
@@ -45,6 +62,7 @@ class HotSpot:
         conf = {}
         conf['type'] = "scene"
         conf['text'] = title
+        conf['distance'] = self._get_distance()
         conf['yaw'] = self._get_bearing()
         conf['pitch'] = 0
         conf['sceneId'] = self.scene_id
