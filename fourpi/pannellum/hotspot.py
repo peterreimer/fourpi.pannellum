@@ -4,6 +4,7 @@ from __future__ import print_function
 import logging
 from haversine import haversine                    
 import math
+from fourpi.pannellum.utils import _pretty_distance
 
 logger = logging.getLogger('pannellum.hotspot')
 
@@ -29,11 +30,11 @@ class HotSpot:
 
     def _get_distance(self):
         try:
-            distance = haversine((self.lat1, self.lng1), (self.lat2, self.lat2))
+            distance = haversine((self.lng1, self.lat1), (self.lng2, self.lat2))
         except:
             distance = None
         logger.warn("%s %s: %s", self.scene_id, self.dest['title'], distance )
-        return distance
+        return _pretty_distance(distance) 
  
     def _get_bearing(self):
 
@@ -61,8 +62,7 @@ class HotSpot:
         title = self.text
         conf = {}
         conf['type'] = "scene"
-        conf['text'] = title
-        conf['distance'] = self._get_distance()
+        conf['text'] = "%s (%s)" % (title, self._get_distance())
         conf['yaw'] = self._get_bearing()
         conf['pitch'] = 0
         conf['sceneId'] = self.scene_id
