@@ -110,11 +110,8 @@ def main():
 if __name__ == "__main__":
 
     panos = [
-        "/home/reimer/Panoramen/Bokul/bokul-grid-crop.jpg"
-        #"/home/peter/Development/4pi.org/content/panos/gehry-bauten.jpg"
-        #"../../panos/bruecke_klein.jpg",
-        #"../../panos/Gehry Bauten.jpg",
-        #"../../panos/Medienhafen Hyatt.jpg",
+        "../../tests/panos/referenz.jpg",
+        "../../tests/panos/mafra.jpg"
         #"../../panos/medienhafen-bruecke.jpg"
     ]
 

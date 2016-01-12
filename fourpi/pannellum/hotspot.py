@@ -31,11 +31,11 @@ class HotSpot:
     def _get_distance(self):
         try:
             distance = haversine((self.lng1, self.lat1), (self.lng2, self.lat2))
+            return _pretty_distance(distance) 
         except:
-            distance = None
-        logger.warn("%s %s: %s", self.scene_id, self.dest['title'], distance )
-        return _pretty_distance(distance) 
- 
+            return ""
+        #logger.warn("%s %s: %s", self.scene_id, self.dest['title'], distance )
+
     def _get_bearing(self):
 
         try:
