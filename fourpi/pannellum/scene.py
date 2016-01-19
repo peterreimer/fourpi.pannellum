@@ -84,9 +84,6 @@ class Scene:
         conf['northOffset'] = self.northOffset
         conf['title'] = self.title
         conf['compass'] = True
-        # minPitch, maxPitch = self._pitch()
-        # conf['maxPitch'] = maxPitch
-        # conf['minPitch'] = minPitch
         conf['yaw'] = self.exif.get('pan', 0)
         conf['pitch'] = self.exif.get('tilt', 0)
         conf['hfov'] = self.exif.get('fov', 0)
@@ -209,7 +206,7 @@ class Scene:
             logger.info("Skipping extraction and tile creation, %s exists", self.tile_folder)
 
     def fallback(self, force=False):
-        """Scaling down the cubuc faces as fallback option"""
+        """Scaling down the cubic faces as fallback option"""
 
         if hasattr(self, 'faces'):
             for f, image in self.faces:

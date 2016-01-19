@@ -11,39 +11,33 @@ logger = logging.getLogger('pannellum.hotspot')
 class HotSpot:
 
     def __init__(self, scene_id, src, dest):
+        """src and dest are the exifdata of the respective scenes"""
 
-        self.src = src
         self.scene_id = scene_id
+        self.src = src
         self.dest = dest
         self.text = dest.get('title', 'n/a')
-        self.lat = src.get('lat', None)
-        self.lng = src.get('lng', None)
-        
-        self.lat1 = self.src.get('lat', None)
-        self.lng1 = self.src.get('lng', None)
 
-        self.lat2 = self.dest.get('lat', None)
-        self.lng2 = self.dest.get('lng', None)
-
-        
         self.northOffset = src.get('northOffset', 0)
+        
+        if self.src.has_key("latlng") and self.dest.has_key("latlng"):
+            self.gps = True
 
     def _get_distance(self):
-        try:
-            distance = haversine((self.lng1, self.lat1), (self.lng2, self.lat2))
+        if hasattr(self, 'gps'):
+            distance = haversine(self.src['latlng'], self.dest['latlng'])
             return _pretty_distance(distance) 
-        except:
+        else:
             return ""
-        #logger.warn("%s %s: %s", self.scene_id, self.dest['title'], distance )
 
     def _get_bearing(self):
 
-        try:
-            lat1 = self.src.get('lat', None)
-            lng1 = self.src.get('lng', None)
+        if hasattr(self, 'gps'):
+            lat1 = self.src['latlng'][0]
+            lng1 = self.src['latlng'][1]
 
-            lat2 = self.dest.get('lat', None)
-            lng2 = self.dest.get('lng', None)
+            lat2 = self.dest['latlng'][0]
+            lng2 = self.dest['latlng'][1]
 
             rlat1 = math.radians(lat1)
             rlat2 = math.radians(lat2)
@@ -55,7 +49,7 @@ class HotSpot:
             bd = math.degrees(b)
             br, bn = divmod(bd + 360, 360) # the bearing remainder and final bearing
             return bn - self.northOffset
-        except:
+        else:
             return 0
 
     def get_conf(self):
