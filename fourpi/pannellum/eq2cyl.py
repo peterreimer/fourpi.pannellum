@@ -24,10 +24,17 @@ print(args)
 pano = PIL.Image.open(args.panorama)
 width, height = pano.size
 
-script = open('cyl.pto','w')
-script.write('p f1 w%s h%s n"TIFF" u0 v360\n' % (width, width / 2 * 1.4))
+base = os.path.splitext(os.path.basename(args.panorama))[0]
+script_name = base + "-cyl.pto"
+out_name = base + "-cyl.tif"
+
+cyl_height = 2 * (width / (2 * math.pi) * math.tan(math.radians(args.vfov / 2)))
+print(width, int(cyl_height))
+
+script = open(script_name, 'w')
+script.write('p f1 w%s h%s n"TIFF" u0 v360\n' % (width, int(cyl_height)))
 script.write('i f4 w%s h%s r0 p0 y0 v360 n"%s"\n' % (width, height, args.panorama))
 
-args = [NONA, '-v', '-o', 'cyl.tif', 'cyl.pto']
+args = [NONA, '-v', '-o', out_name, script_name]
 p = subprocess.Popen(args)
 
