@@ -15,7 +15,7 @@ NONA = find_executable('nona')
 parser = argparse.ArgumentParser(description='Remap panoramas from equirectangular to cylindrical projection')
 parser.add_argument('panorama', metavar='INPUT', help='Panoramic image')
 parser.add_argument('-f', '--vfov', type=float,
-                        default=140.0, help='Vertical Field of View. Default: 140')
+                        default=130.0, help='Vertical Field of View in degree. Default: 130')
 
 
 args = parser.parse_args()
