@@ -30,6 +30,7 @@ setup(name='fourpi.pannellum',
           'console_scripts':[
             'pannellum=fourpi.pannellum.tour:main',
             'exif2rst=fourpi.pannellum.exif:main',
+            'eq2cyl=fourpi.pannellum.eq2cyl:main',
           ]  
       },
       )
