@@ -76,7 +76,6 @@ class Exif:
                     value = int(1 / value)
                 values[conf] = value
 
-            print(values['lat'],values['lng'])
             if values['lat'] and values['lng']:
                 values['latlng'] = (values['lat'], values['lng'])
                 
