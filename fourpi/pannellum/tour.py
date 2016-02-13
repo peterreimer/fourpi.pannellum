@@ -27,21 +27,30 @@ class  Tour:
         default = {}
         author = kwargs.get('author', None)
         autoRotate = kwargs.get('autoRotate', 0)
-        if author:
-            default['author'] = author
+        sceneFadeDuration = kwargs.get('sceneFadeDuration', 0)
 
         scenes_conf = {}
         self.scenes = []
         for panorama in panoramas:
-            scene = Scene(panorama, exifdata=exifdata, image_quality=0.9, autoRotate=autoRotate, basePath=basePath, tile_folder=tile_folder)
+            scene = Scene(panorama,
+                          exifdata=exifdata,
+                          image_quality=0.9,
+                          autoRotate=autoRotate,
+                          basePath=basePath,
+                          tile_folder=tile_folder)
             self.scenes.append(scene)
             scenes_conf[scene.scene_id] = scene.conf
 
         firstScene = kwargs.get('firstScene', scenes_conf.keys()[0])
         default['firstScene'] = firstScene
         default['autoLoad'] = True
+        if author:
+            default['author'] = author
         if self.debug:
             default['hotSpotDebug'] = True
+        if sceneFadeDuration:
+            default['sceneFadeDuration'] = sceneFadeDuration
+
         self.conf['default'] = default
         self.conf['scenes'] = scenes_conf
 
@@ -105,13 +114,13 @@ def main():
             scene.tile(force=args.force)
             scene.fallback(force=args.force)
 
-    print(tour.get_json()) 
+    print(tour.get_json())
 
 if __name__ == "__main__":
 
     panos = [
-        "../../tests/panos/referenz.jpg",
-        "../../tests/panos/mafra.jpg"
+        "../../tests/panos/pano1.jpg",
+        "../../tests/panos/pano2.jpg"
         #"../../panos/medienhafen-bruecke.jpg"
     ]
 
@@ -123,10 +132,11 @@ if __name__ == "__main__":
                 autoRotate=10,
                 tile_folder='tiles',
                 basePath='../tiles',
+                sceneFadeDuration=1500,
                 exifdata=exifdata,
                 panoramas=panos)
 
     for scene in tour.scenes:
         scene.tile(force=True)
-    print(tour.get_json()) 
+    print(tour.get_json())
 
