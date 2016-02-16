@@ -17,6 +17,8 @@ def main():
     parser.add_argument('panorama', metavar='INPUT', help='Panoramic image')
     parser.add_argument('-f', '--vfov', type=float,
                             default=130.0, help='Vertical Field of View in degree. Default: 130')
+    parser.add_argument('-i', '--interpolator', type=int,
+                            default=2, help='Interpolator used for remapping.')
     parser.add_argument('-w', '--width', type=int,
                              help='Width of output in px. Default: original width.')
 
@@ -28,6 +30,11 @@ def main():
     width, height = pano.size
     if args.width:
         cyl_width = args.width
+    else:
+        cyl_width = width
+    
+    interpolator = args.interpolator
+
     base = os.path.splitext(os.path.basename(args.panorama))[0]
     script_name = base + "-cyl.pto"
     out_name = base + "-cyl.tif"
@@ -37,6 +44,7 @@ def main():
 
     script = open(script_name, 'w')
     script.write('p f1 w%s h%s n"TIFF" u0 v360\n' % (int(cyl_width), int(cyl_height)))
+    script.write('m i%s\n' % interpolator)
     script.write('i f4 w%s h%s r0 p0 y0 v360 n"%s"\n' % (width, height, args.panorama))
 
     args = [NONA, '-v', '-o', out_name, script_name]
