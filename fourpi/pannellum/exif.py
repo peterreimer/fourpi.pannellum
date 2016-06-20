@@ -73,7 +73,10 @@ class Exif:
                 if type == 'lines' and value:
                     value = value.split('\n')
                 if conf == 'exposure' and value:
-                    value = int(1 / value)
+                    try:
+                        value = int(1 / value)
+                    except:
+                        value = 0
                 values[conf] = value
 
             if values['lat'] and values['lng']:
