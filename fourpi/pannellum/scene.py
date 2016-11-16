@@ -79,13 +79,17 @@ class Scene:
         self.title = self.exif.get('title', 'n/a')
         self.northOffset = self.exif.get('northOffset', 0)
         self._levels_and_tiles(self.tile_size)
-
+        
+        minPitch, maxPitch = self._pitch()
+        
         conf['type'] = 'multires'
         conf['northOffset'] = self.northOffset
         conf['title'] = self.title
         conf['compass'] = True
         conf['yaw'] = self.exif.get('pan', 0)
         conf['pitch'] = self.exif.get('tilt', 0)
+        conf['minPitch'] = minPitch
+        conf['maxPitch'] = maxPitch 
         conf['hfov'] = self.exif.get('fov', 0)
 
         conf['multiRes'] = self._multires_conf()
@@ -117,12 +121,12 @@ class Scene:
         """return the configuration in pannellums json format"""
         return json.dumps(self.conf, sort_keys=True, indent=4, separators=(', ', ': '))
 
-    def _pitch(self):
+    def _pitch(self, digits=1):
         """return pitch values for symmetrical equirectlinear Panoramas"""
 
         vfov = float(self.height) / float(self.width) * float(self.hfov)
-        minPitch = - 0.5 * vfov
-        maxPitch = + 0.5 * vfov
+        minPitch = round( - 0.5 * vfov, digits)
+        maxPitch = round( + 0.5 * vfov, digits)
         return minPitch, maxPitch
 
     def _levels_and_tiles(self, tile_size):
@@ -210,11 +214,14 @@ class Scene:
 
         if hasattr(self, 'faces'):
             for f, image in self.faces:
-                logger.debug("fallback face %s", f)
-                fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
-                face = PIL.Image.open(image)
-                face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
-                face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
+                if not os.path.isfile(image):
+                    logger.info(" face %s not found", f)
+                else:
+                    logger.debug("fallback face %s", f)
+                    fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
+                    face = PIL.Image.open(image)
+                    face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
+                    face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
         else:
             logger.error("no faces for %s", self.scene_id)
 
@@ -226,7 +233,7 @@ if __name__ == "__main__":
     console.setFormatter(formatter)
     logger.addHandler(console)
 
-    pano = "../../tests/panos/referenz.jpg"
+    pano = "../../tests/panos/partial.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     # scene = Scene(pano)
