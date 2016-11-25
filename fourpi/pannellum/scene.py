@@ -80,6 +80,11 @@ class Scene:
         self.northOffset = self.exif.get('northOffset', 0)
         self._levels_and_tiles(self.tile_size)
         
+        # gpano stuff
+        self.panoHeight = float(self.exif.get('panoHeight', self.height))
+        self.croppedHeight = float(self.exif.get('croppedHeight', self.height))
+        self.croppedTop = float(self.exif.get('croppedTop', 0))
+        
         minPitch, maxPitch = self._pitch()
         
         conf['type'] = 'multires'
@@ -88,8 +93,10 @@ class Scene:
         conf['compass'] = True
         conf['yaw'] = self.exif.get('pan', 0)
         conf['pitch'] = self.exif.get('tilt', 0)
-        conf['minPitch'] = minPitch
-        conf['maxPitch'] = maxPitch 
+        if minPitch > -90:
+            conf['minPitch'] = minPitch
+        if maxPitch < 90:
+            conf['maxPitch'] = maxPitch 
         conf['hfov'] = self.exif.get('fov', 0)
 
         conf['multiRes'] = self._multires_conf()
@@ -124,9 +131,10 @@ class Scene:
     def _pitch(self, digits=1):
         """return pitch values for symmetrical equirectlinear Panoramas"""
 
-        vfov = float(self.height) / float(self.width) * float(self.hfov)
-        minPitch = round( - 0.5 * vfov, digits)
-        maxPitch = round( + 0.5 * vfov, digits)
+        # maxPitch = round(+0.5 * vfov, digits)
+        maxPitch = round(90 - 180 * self.croppedTop / self.panoHeight, digits)
+        minPitch = round(-180 / self.panoHeight * (self.croppedTop + self.croppedHeight - 0.5 * self.panoHeight), digits)
+        logger.info("Pitch: %s %s " % (maxPitch, minPitch))
         return minPitch, maxPitch
 
     def _levels_and_tiles(self, tile_size):
@@ -151,14 +159,19 @@ class Scene:
         logger.info("Scaling: %s, Tile: %s, Face: %s ", scale, self.tileResolution, self.cubeResolution)
         return scale
 
+    def _image_shift(self):
+        e = 0.5 * (self.panoHeight - self.croppedHeight) - self.croppedTop
+        logger.info("shift: %s " % e)
+        return e
+    
     def _make_script(self):
         """Create """
-
+        vertical_shift = self._image_shift()
         tmp_fd, tmp_name = tempfile.mkstemp(".txt", "nona")
         script = os.fdopen(tmp_fd, "w")
         script.write('p f0 w%s h%s n"TIFF_m" u0 v90\n' % (self.cubeResolution, self.cubeResolution))
         for yaw, pitch in ANGLES:
-            script.write('i f4 w%s h%s y%s p%s r0 v%s n"%s"\n' % (self.width, self.height, yaw, pitch, self.hfov, _expand(self.src)))
+            script.write('i f4 w%s h%s e%s y%s p%s r0 v%s n"%s"\n' % (self.width, self.height, vertical_shift, yaw, pitch, self.hfov, _expand(self.src)))
         logger.info("Script created at %s", tmp_name)
         return tmp_name
 
@@ -172,7 +185,7 @@ class Scene:
         args = (NONA, '-v', '-o', output, script)
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         nona.communicate()
-        faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, + i)) for i in range(6)]
+        faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, +i)) for i in range(6)]
         self.faces = zip(FACES, faces)
 
     def tile(self, force=False):
@@ -182,7 +195,7 @@ class Scene:
         tile_size = self.tileResolution
         exists = os.path.isdir(self.tile_folder)
         if not exists or force:
-            #_get_or_create_path(self.tile_folder)# os.makedirs(self.output_dir)
+            # _get_or_create_path(self.tile_folder)# os.makedirs(self.output_dir)
             self.extract()
             for f, image in self.faces:
                 if not os.path.isfile(image):
@@ -234,6 +247,7 @@ if __name__ == "__main__":
     logger.addHandler(console)
 
     pano = "../../tests/panos/partial.jpg"
+    # pano = "../../tests/panos/pano1.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     # scene = Scene(pano)
