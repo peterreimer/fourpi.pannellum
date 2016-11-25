@@ -42,12 +42,12 @@ mapping = (
     ('lng', 'GPSLongitude', None, 'float'),
     ('lat', 'GPSLatitude', None, 'float'),
     ('northOffset', 'GPSImgDirection', 0, 'float'),
-    ('croppedHeight', 'CroppedAreaImageHeightPixels', 1, 'int'),
-    ('croppedWidth', 'CroppedAreaImageWidthPixels', 2, 'int'),
+    ('croppedHeight', 'CroppedAreaImageHeightPixels', None, 'int'),
+    ('croppedWidth', 'CroppedAreaImageWidthPixels', None, 'int'),
     ('croppedLeft', 'CroppedAreaLeftPixels', 0, 'int'),
     ('croppedTop', 'CroppedAreaTopPixels', 0, 'int'),
-    ('panoHeight', 'FullPanoHeightPixels', 1, 'int'),
-    ('panoWidth', 'FullPanoWidthPixels', 1, 'int')
+    ('panoHeight', 'FullPanoHeightPixels', None, 'int'),
+    ('panoWidth', 'FullPanoWidthPixels', None, 'int')
 )
 
 class Exif:

@@ -84,6 +84,8 @@ class Scene:
         self.panoHeight = float(self.exif.get('panoHeight', self.height))
         self.croppedHeight = float(self.exif.get('croppedHeight', self.height))
         self.croppedTop = float(self.exif.get('croppedTop', 0))
+        logger.info("gpano: %s %s %s " % (self.panoHeight, self.croppedHeight, self.croppedTop))
+        
         
         minPitch, maxPitch = self._pitch()
         
@@ -129,7 +131,7 @@ class Scene:
         return json.dumps(self.conf, sort_keys=True, indent=4, separators=(', ', ': '))
 
     def _pitch(self, digits=1):
-        """return pitch values for symmetrical equirectlinear Panoramas"""
+        """return pitch values for cropped equirectlinear Panoramas"""
 
         # maxPitch = round(+0.5 * vfov, digits)
         maxPitch = round(90 - 180 * self.croppedTop / self.panoHeight, digits)
@@ -246,8 +248,8 @@ if __name__ == "__main__":
     console.setFormatter(formatter)
     logger.addHandler(console)
 
-    pano = "../../tests/panos/partial.jpg"
-    # pano = "../../tests/panos/pano1.jpg"
+    # pano = "../../tests/panos/partial.jpg"
+    pano = "../../tests/panos/pano1.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     # scene = Scene(pano)
