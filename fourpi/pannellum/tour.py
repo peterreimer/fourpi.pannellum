@@ -121,7 +121,7 @@ if __name__ == "__main__":
     panos = [
         "../../tests/panos/pano1.jpg",
         "../../tests/panos/pano2.jpg"
-        #"../../panos/medienhafen-bruecke.jpg"
+        # "../../panos/medienhafen-bruecke.jpg"
     ]
 
     e = Exif(panos)

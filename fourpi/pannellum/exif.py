@@ -42,6 +42,8 @@ mapping = (
     ('lng', 'GPSLongitude', None, 'float'),
     ('lat', 'GPSLatitude', None, 'float'),
     ('northOffset', 'GPSImgDirection', 0, 'float'),
+)
+gpano = (
     ('croppedHeight', 'CroppedAreaImageHeightPixels', None, 'int'),
     ('croppedWidth', 'CroppedAreaImageWidthPixels', None, 'int'),
     ('croppedLeft', 'CroppedAreaLeftPixels', 0, 'int'),
@@ -88,6 +90,11 @@ class Exif:
             if values['lat'] and values['lng']:
                 values['latlng'] = (values['lat'], values['lng'])
                 
+            for conf, tag, default, type in gpano:
+                if exif.has_key(tag):
+                    value = exif[tag]
+                    logger.info("%s: %s", tag, value)
+                    values[conf] = float(value)
 
             exifdata[scene_id] = values
             logger.info("EXIF data read from %s", panorama)

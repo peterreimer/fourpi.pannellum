@@ -81,9 +81,13 @@ class Scene:
         self._levels_and_tiles(self.tile_size)
         
         # gpano stuff
-        self.panoHeight = float(self.exif.get('panoHeight', self.height))
-        self.croppedHeight = float(self.exif.get('croppedHeight', self.height))
-        self.croppedTop = float(self.exif.get('croppedTop', 0))
+        self.croppedHeight = self.exif.get('croppedHeight', None)
+        if not self.croppedHeight:
+            self.croppedHeight = self.height
+        self.panoHeight = self.exif.get('panoHeight', None)
+        if not self.panoHeight:
+            self.panoHeight = self.height
+        self.croppedTop = self.exif.get('croppedTop', 0)
         logger.info("gpano: %s %s %s " % (self.panoHeight, self.croppedHeight, self.croppedTop))
         
         
@@ -248,14 +252,13 @@ if __name__ == "__main__":
     console.setFormatter(formatter)
     logger.addHandler(console)
 
+    pano = "/data/Panoramas/Panoramen/Vancouver/Stelzenhaus/stelzenhaus.jpg"
     # pano = "../../tests/panos/partial.jpg"
-    pano = "../../tests/panos/pano1.jpg"
+    # pano = "../../tests/panos/pano1.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     # scene = Scene(pano)
     scene = Scene(pano, exifdata=exifdata, tile_size=256, tile_folder='../../tests/panos/')
-    # scene = Scene(pano)
-    scene.tile(force=True)
-    # scene.tile(force=False)
+    #scene.tile(force=True)
     scene.fallback()
     print(scene.get_json())
