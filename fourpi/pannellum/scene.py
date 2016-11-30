@@ -205,26 +205,28 @@ class Scene:
             self.extract()
             for f, image in self.faces:
                 if not os.path.isfile(image):
-                    logger.info(" face %s not found", f)
-                else:
-                    logger.info("tiling face %s", f)
-                    size = self.cubeResolution
-                    face = PIL.Image.open(image)
-                    for level in range(levels, 0, -1):
-                        level_dir = _get_or_create_path(os.path.join(self.tile_folder, str(level)))
-                        tiles = int(math.ceil(size / tile_size))
-                        if level < levels:
-                            face = face.resize([size, size], PIL.Image.ANTIALIAS)
-                        for i in range(0, tiles):
-                            for j in range(0, tiles):
-                                left = j * tile_size
-                                upper = i * tile_size
-                                right = min(j * tile_size + tile_size, size)
-                                lower = min(i * tile_size + tile_size, size)
-                                tile = face.crop([left, upper, right, lower])
-                                tile.load()
-                                tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=self.image_quality)
-                        size = int(size / 2)
+                    logger.info("face %s not found", f)
+                    dummy = PIL.Image.new("1", (self.cubeResolution, self.cubeResolution))
+                    dummy.save(image, 'TIFF')
+                    logger.info("create blank image %sx%s" % (self.cubeResolution, self.cubeResolution))
+                logger.info("tiling face %s", f)
+                size = self.cubeResolution
+                face = PIL.Image.open(image)
+                for level in range(levels, 0, -1):
+                    level_dir = _get_or_create_path(os.path.join(self.tile_folder, str(level)))
+                    tiles = int(math.ceil(size / tile_size))
+                    if level < levels:
+                        face = face.resize([size, size], PIL.Image.ANTIALIAS)
+                    for i in range(0, tiles):
+                        for j in range(0, tiles):
+                            left = j * tile_size
+                            upper = i * tile_size
+                            right = min(j * tile_size + tile_size, size)
+                            lower = min(i * tile_size + tile_size, size)
+                            tile = face.crop([left, upper, right, lower])
+                            tile.load()
+                            tile.save(os.path.join(level_dir, "%s%s_%s.%s" % (f, i, j, EXTENSION)), 'JPEG', quality=self.image_quality)
+                    size = int(size / 2)
         else:
             logger.info("Skipping extraction and tile creation, %s exists", self.tile_folder)
 
@@ -246,19 +248,19 @@ class Scene:
 
 if __name__ == "__main__":
 
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     console = logging.StreamHandler()
     formatter = logging.Formatter('%(levelname)s: %(message)s')
     console.setFormatter(formatter)
     logger.addHandler(console)
 
-    pano = "/data/Panoramas/Panoramen/Vancouver/Stelzenhaus/stelzenhaus.jpg"
-    # pano = "../../tests/panos/partial.jpg"
+    # pano = "/data/Panoramas/Panoramen/Vancouver/Stelzenhaus/stelzenhaus.jpg"
+    pano = "../../tests/panos/narrow.jpg"
     # pano = "../../tests/panos/pano1.jpg"
     e = Exif([pano])
     exifdata = e.get_exifdata()
     # scene = Scene(pano)
     scene = Scene(pano, exifdata=exifdata, tile_size=256, tile_folder='../../tests/panos/')
-    #scene.tile(force=True)
+    scene.tile(force=True)
     scene.fallback()
     print(scene.get_json())
