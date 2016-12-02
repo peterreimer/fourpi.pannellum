@@ -99,6 +99,8 @@ class Scene:
         conf['compass'] = True
         conf['yaw'] = self.exif.get('pan', 0)
         conf['pitch'] = self.exif.get('tilt', 0)
+        conf['latlng'] = self.exif.get('latlng', None)
+                
         if minPitch > -90:
             conf['minPitch'] = minPitch
         if maxPitch < 90:
