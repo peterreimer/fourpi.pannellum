@@ -13,7 +13,7 @@ from fourpi.pannellum.scene import DEFAULT_IMAGE_FORMAT, DEFAULT_IMAGE_QUALITY, 
 logger = logging.getLogger('pannellum')
 
 
-class  Tour:
+class Tour:
 
     def __init__(self, exifdata, panoramas=[], **kwargs):
 
@@ -70,6 +70,7 @@ class  Tour:
         else:
             return json.dumps(self.conf, sort_keys=False, indent=None, separators=(',', ':'))
 
+
 def main():
 
     parser = argparse.ArgumentParser(description='Pannellum configurator')
@@ -102,7 +103,6 @@ def main():
     e = Exif(args.panoramas)
     exifdata = e.get_exifdata()
 
-
     tour = Tour(author=args.author,
                 debug=args.debug,
                 tile_folder=args.tile_folder,
@@ -115,6 +115,7 @@ def main():
             scene.fallback(force=args.force)
 
     print(tour.get_json())
+
 
 if __name__ == "__main__":
 
@@ -139,4 +140,3 @@ if __name__ == "__main__":
     for scene in tour.scenes:
         scene.tile(force=True)
     print(tour.get_json())
-

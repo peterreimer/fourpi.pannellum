@@ -52,6 +52,7 @@ gpano = (
     ('panoWidth', 'FullPanoWidthPixels', None, 'int')
 )
 
+
 class Exif:
 
     def __init__(self, panoramas=[], **kwargs):
@@ -101,8 +102,10 @@ class Exif:
 
         return exifdata
 
+
 def now():
     return datetime.datetime.now().strftime('%Y-%m-%d')
+
 
 def main():
 
@@ -136,6 +139,7 @@ def main():
     print(rst % exif)
     for k, v in exif.items():
         print(fmt % (k, v))
+
 
 if __name__ == "__main__":
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env  python
 
-
-from haversine import haversine                    
+from fourpi.pannellum.utils import haversine
 import math
 import logging
 from fourpi.pannellum.utils import _pretty_distance
 
 logger = logging.getLogger('pannellum.hotspot')
+
 
 class HotSpot:
 
@@ -20,7 +20,7 @@ class HotSpot:
 
         self.northOffset = src.get('northOffset', 0)
         self.targetNorthOffset = dest.get('northOffset', 0)
-        
+
         if "latlng" in self.src and "latlng" in self.dest:
             self.gps = True
 
@@ -28,17 +28,17 @@ class HotSpot:
         """Return distance to hotspot in a humanfriendly way,
             ie 123 m, 1.6 km etc.
         """
-        
+
         if hasattr(self, 'gps'):
             distance = haversine(self.src['latlng'], self.dest['latlng'])
-            return _pretty_distance(distance) 
+            return _pretty_distance(distance)
         else:
             return ""
 
     def _get_bearing(self):
-        """Return the bearing of the hotspot, used as yaw angle. 
+        """Return the bearing of the hotspot, used as yaw angle.
         """
-        
+
         if hasattr(self, 'gps'):
             lat1 = self.src['latlng'][0]
             lng1 = self.src['latlng'][1]
@@ -51,8 +51,8 @@ class HotSpot:
             # rlng1 = math.radians(lng1)
             # rlng2 = math.radians(lng2)
             dlng = math.radians(lng2 - lng1)
-
-            b = math.atan2(math.sin(dlng) * math.cos(rlat2), math.cos(rlat1) * math.sin(rlat2) - math.sin(rlat1) * math.cos(rlat2) * math.cos(dlng)) # bearing calc
+            # bearing calc
+            b = math.atan2(math.sin(dlng) * math.cos(rlat2), math.cos(rlat1) * math.sin(rlat2) - math.sin(rlat1) * math.cos(rlat2) * math.cos(dlng))
             bd = math.degrees(b)
             bn = (bd + 360) % 360
             return bn
@@ -62,7 +62,7 @@ class HotSpot:
     def get_conf(self):
         """Return the hotspots configuration dictionary.
         """
-        
+
         title = self.text
         yaw = self._get_bearing() - self.northOffset
         targetYaw = yaw + self.northOffset - self.targetNorthOffset

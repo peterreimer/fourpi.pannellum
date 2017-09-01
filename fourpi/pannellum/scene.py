@@ -1,6 +1,5 @@
 #!/usr/bin/env  python
 
-
 from distutils.spawn import find_executable
 import logging
 import math
@@ -28,7 +27,7 @@ RESIZE_FILTERS = {
     'bicubic': PIL.Image.BICUBIC,
     'nearest': PIL.Image.NEAREST,
     'antialias': PIL.Image.ANTIALIAS,
-    }
+}
 
 DEFAULT_RESIZE_FILTER = PIL.Image.ANTIALIAS
 DEFAULT_IMAGE_FORMAT = 'jpg'
@@ -40,6 +39,7 @@ NONA = find_executable('nona')
 
 if not NONA:
     logger.error("nona required but not found.")
+
 
 class Scene:
     """A panoramic scene
@@ -79,7 +79,7 @@ class Scene:
         self.title = self.exif.get('title', 'n/a')
         self.northOffset = self.exif.get('northOffset', 0)
         self._levels_and_tiles(self.tile_size)
-        
+
         # gpano stuff
         self.croppedHeight = self.exif.get('croppedHeight', None)
         if not self.croppedHeight:
@@ -89,10 +89,9 @@ class Scene:
             self.panoHeight = self.height
         self.croppedTop = self.exif.get('croppedTop', 0)
         logger.info("gpano: %s %s %s " % (self.panoHeight, self.croppedHeight, self.croppedTop))
-        
-        
+
         minPitch, maxPitch = self._pitch()
-        
+
         conf['type'] = 'multires'
         conf['northOffset'] = self.northOffset
         conf['title'] = self.title
@@ -100,11 +99,11 @@ class Scene:
         conf['yaw'] = self.exif.get('pan', 0)
         conf['pitch'] = self.exif.get('tilt', 0)
         conf['latlng'] = self.exif.get('latlng', None)
-                
+
         if minPitch > -90:
             conf['minPitch'] = minPitch
         if maxPitch < 90:
-            conf['maxPitch'] = maxPitch 
+            conf['maxPitch'] = maxPitch
         conf['hfov'] = self.exif.get('fov', 0)
 
         conf['multiRes'] = self._multires_conf()
@@ -171,7 +170,7 @@ class Scene:
         e = 0.5 * (self.panoHeight - self.croppedHeight) - self.croppedTop
         logger.info("shift: %s " % e)
         return e
-    
+
     def _make_script(self):
         """Create """
         vertical_shift = self._image_shift()
@@ -247,6 +246,7 @@ class Scene:
                     face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
         else:
             logger.error("no faces for %s", self.scene_id)
+
 
 if __name__ == "__main__":
 
