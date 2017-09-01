@@ -1,6 +1,6 @@
 #!/usr/bin/env  python
 
-from __future__ import print_function
+
 from haversine import haversine                    
 import math
 import logging
@@ -21,7 +21,7 @@ class HotSpot:
         self.northOffset = src.get('northOffset', 0)
         self.targetNorthOffset = dest.get('northOffset', 0)
         
-        if self.src.has_key("latlng") and self.dest.has_key("latlng"):
+        if "latlng" in self.src and "latlng" in self.dest:
             self.gps = True
 
     def _get_distance(self):

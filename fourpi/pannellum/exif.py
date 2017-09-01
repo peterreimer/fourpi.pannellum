@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Parse panorama specific exif metadata.
 """
-from __future__ import  print_function
+
 from distutils.spawn import find_executable
 import argparse
 import datetime
@@ -66,11 +66,11 @@ class Exif:
             if not os.path.isfile(panorama):
                 logger.error("File not found: %s", panorama)
                 break
-            exifjson = subprocess.check_output([EXIFTOOL, '-j', '-n', panorama])
+            exifjson = subprocess.check_output([EXIFTOOL, '-j', '-n', panorama]).decode('utf-8')
             exif = json.loads(exifjson)[0]
             values = {}
             for conf, tag, default, type in mapping:
-                if not exif.has_key(tag):
+                if tag not in exif:
                     value = default
                     logger.warn("%s: missing %s (default=%s)", scene_id, tag, default)
                 else:
@@ -89,9 +89,9 @@ class Exif:
 
             if values['lat'] and values['lng']:
                 values['latlng'] = (values['lat'], values['lng'])
-                
+
             for conf, tag, default, type in gpano:
-                if exif.has_key(tag):
+                if tag in exif:
                     value = exif[tag]
                     logger.info("%s: %s", tag, value)
                     values[conf] = float(value)
@@ -120,7 +120,7 @@ def main():
 
 :date:     %(date)s
 :category: Panoramas
-:tags: 
+:tags:
 :template: panorama
 :scene_id: %(scene_id)s
 """
@@ -134,7 +134,7 @@ def main():
     exif['scene_id'] = scene_id
     exif['date'] = now()
     print(rst % exif)
-    for k, v in exif.iteritems():
+    for k, v in exif.items():
         print(fmt % (k, v))
 
 if __name__ == "__main__":
@@ -146,11 +146,10 @@ if __name__ == "__main__":
     logger.addHandler(console)
 
     panos = [
-        "../../tests/panos/referenz.jpg"
+        "../../tests/panos/pano1.jpg"
     ]
 
     e = Exif(panoramas=panos)
-    exif = e.get_exifdata() 
+    exif = e.get_exifdata()
     # print(exif['gehry-bauten'])
     print(exif)
-    

@@ -1,7 +1,7 @@
 #!/usr/bin/env  python
 # -*- coding: utf-8 -*-
-from __future__ import  print_function
-import ConfigParser
+
+import configparser
 import json
 import os
 import logging
@@ -41,7 +41,7 @@ class  Tour:
             self.scenes.append(scene)
             scenes_conf[scene.scene_id] = scene.conf
 
-        firstScene = kwargs.get('firstScene', scenes_conf.keys()[0])
+        firstScene = kwargs.get('firstScene', list(scenes_conf.keys())[0])
         default['firstScene'] = firstScene
         default['autoLoad'] = True
         if author:
@@ -58,7 +58,7 @@ class  Tour:
         cwd = os.getcwd()
         config_file = "pannellumrc"
         cfg = [os.path.join(cwd, config_file), os.path.expanduser('~/.pannellumrc')]
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(cfg)
         author = config.get('default', 'author')
         print(author)

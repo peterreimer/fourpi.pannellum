@@ -1,6 +1,6 @@
 #!/usr/bin/env  python
 
-from __future__ import print_function
+
 from distutils.spawn import find_executable
 import logging
 import math
@@ -109,7 +109,7 @@ class Scene:
 
         conf['multiRes'] = self._multires_conf()
         hotspots = []
-        for dest_scene_id in self.exifdata.keys():
+        for dest_scene_id in list(self.exifdata.keys()):
             src_scene_id = self.scene_id
             if src_scene_id != dest_scene_id:
                 hs = HotSpot(dest_scene_id, self.exifdata[src_scene_id], self.exifdata[dest_scene_id])
@@ -194,7 +194,7 @@ class Scene:
         nona = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         nona.communicate()
         faces = [os.path.join(self.output_dir, "%s%04d.tif" % (self.scene_id, +i)) for i in range(6)]
-        self.faces = zip(FACES, faces)
+        self.faces = list(zip(FACES, faces))
 
     def tile(self, force=False):
         """check existing output """

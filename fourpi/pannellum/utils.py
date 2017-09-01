@@ -31,9 +31,9 @@ def _pretty_distance(kilometer):
 
 if __name__ == "__main__":
 
-    print _pretty_distance(1234.56)
-    print _pretty_distance(345.65)
-    print _pretty_distance(89.2345235)
-    print _pretty_distance(1.52345)
-    print _pretty_distance(0.123456)
-    print _pretty_distance(0.035623452)
+    print(_pretty_distance(1234.56))
+    print(_pretty_distance(345.65))
+    print(_pretty_distance(89.2345235))
+    print(_pretty_distance(1.52345))
+    print(_pretty_distance(0.123456))
+    print(_pretty_distance(0.035623452))
