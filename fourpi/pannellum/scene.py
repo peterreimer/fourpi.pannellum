@@ -42,7 +42,7 @@ if not NONA:
 
 
 class Scene:
-    """A panoramic scene
+    """A panoramic scene.
 
     With hotspots and everything.
     """
@@ -213,6 +213,8 @@ class Scene:
                 logger.info("tiling face %s", f)
                 size = self.cubeResolution
                 face = PIL.Image.open(image)
+                if face.mode == 'RGBA':
+                    face = face.convert('RGB')
                 for level in range(levels, 0, -1):
                     level_dir = _get_or_create_path(os.path.join(self.tile_folder, str(level)))
                     tiles = int(math.ceil(size / tile_size))
@@ -232,8 +234,7 @@ class Scene:
             logger.info("Skipping extraction and tile creation, %s exists", self.tile_folder)
 
     def fallback(self, force=False):
-        """Scaling down the cubic faces as fallback option"""
-
+        """Scaling down the cubic faces as fallback option."""
         if hasattr(self, 'faces'):
             for f, image in self.faces:
                 if not os.path.isfile(image):
@@ -242,6 +243,8 @@ class Scene:
                     logger.debug("fallback face %s", f)
                     fallback_dir = _get_or_create_path(os.path.join(self.tile_folder, 'fallback'))
                     face = PIL.Image.open(image)
+                    if face.mode == 'RGBA':
+                        face = face.convert('RGB')
                     face = face.resize([1024, 1024], PIL.Image.ANTIALIAS)
                     face.save(os.path.join(fallback_dir, f + '.jpg'), quality=self.image_quality)
         else:
